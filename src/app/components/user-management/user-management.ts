@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { UserService } from '../../services/user';
 import { User } from '../../models/user.model';
+import { Notification } from '../../models/notification.model';
 
 @Component({
   selector: 'app-user-management',
@@ -12,10 +13,22 @@ import { User } from '../../models/user.model';
 })
 export class UserM {  
   users: User[] = [];
+  notifications: Notification[] = [];
+
   constructor(private userService: UserService) {
     this.userService.getUsers().subscribe(users => {
       this.users = users;
     });
+
+    this.userService.getNotifications().subscribe(notifications => {
+      this.notifications = notifications;
+    });
+  }
+    
+  deleteNotification(notification: Notification) {
+    if (confirm('Are you sure you want to delete this notification?')) {
+      this.notifications = this.notifications.filter((n: Notification) => n.id !== notification.id);
+    }
   }
 
   approveUser(user: User) {

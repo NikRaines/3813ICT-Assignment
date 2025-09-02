@@ -25,9 +25,6 @@ export class Profile implements OnInit{
           this.router.navigate(['/login']);
         }
       },
-      error: () => {
-        // Optionally handle error
-      }
     });
   }
 
