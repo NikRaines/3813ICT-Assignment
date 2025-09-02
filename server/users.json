@@ -33,5 +33,15 @@
     ],
     "groups": [],
     "valid": true
+  },
+  {
+    "username": "Nikk",
+    "email": "Nik@raines.net.auu",
+    "password": "Test",
+    "roles": [
+      "User"
+    ],
+    "groups": [],
+    "valid": true
   }
 ]

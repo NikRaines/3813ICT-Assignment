@@ -1,8 +1,15 @@
 <h2>Users Needing Approval</h2>
 <ul class="list-group">
 			<li *ngFor="let user of users" class="list-group-item d-flex justify-content-between align-items-center">
-				<span>{{ user.username }} ({{ user.email }})</span>
-				<button *ngIf="!user.valid" class="btn btn-success btn-sm" (click)="approveUser(user)">Approve</button>
-				<button *ngIf="user.valid" class="btn btn-secondary btn-sm" disabled>Approved</button>
+					<span>{{ user.username }} ({{ user.email }})
+						<span class="badge bg-primary ms-2">
+							{{ user.roles?.includes('SuperAdmin') ? 'Super Admin' : (user.roles?.includes('GroupAdmin') ? 'Group Admin' : 'User') }}
+						</span>
+					</span>
+					<span>
+						<button *ngIf="!user.valid" class="btn btn-success btn-sm me-2" (click)="approveUser(user)">Approve</button>
+						<button *ngIf="user.valid" class="btn btn-secondary btn-sm me-2" disabled>Approved</button>
+						<button class="btn btn-danger btn-sm" (click)="confirmDelete(user)">Delete</button>
+					</span>
 			</li>
 	</ul>

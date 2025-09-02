@@ -35,8 +35,12 @@ export class Login {
           this.errorMessage = 'Invalid username or password';
         }
       },
-      error: () => {
-        this.errorMessage = 'Invalid username or password';
+      error: (err) => {
+        if (err.status === 403) {
+          this.errorMessage = 'Your account has not been approved yet.';
+        } else {
+          this.errorMessage = 'Invalid username or password';
+        }
       }
     });
   }
@@ -52,7 +56,7 @@ export class Login {
   this.userService.register(this.newUsername, this.newEmail, this.newPassword).subscribe({
       next: (response: any) => {
         if (response.success) {
-          this.registerMessage = 'Account created successfully! You can now log in.';
+          this.registerMessage = 'Account created successfully! Please wait for approval.';
           this.newUsername = '';
           this.newEmail = '';
           this.newPassword = '';
