@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Auth } from '../../services/auth';
+import { UserService } from '../../services/user';
 import { User } from '../../models/user.model';
 
 @Component({
@@ -16,7 +17,13 @@ export class Login {
   password = '';
   errorMessage = '';
 
-  constructor(private auth: Auth, private router: Router) {}
+  newUsername = '';
+  newEmail = '';
+  newPassword = '';
+  registerMessage = '';
+  registerError = '';
+
+  constructor(private auth: Auth, private userService: UserService, private router: Router) {}
 
   login() {
     this.auth.login(this.username, this.password).subscribe({
@@ -30,6 +37,31 @@ export class Login {
       },
       error: () => {
         this.errorMessage = 'Invalid username or password';
+      }
+    });
+  }
+
+  register() {
+    this.registerMessage = '';
+    this.registerError = '';
+    if (!this.newUsername || !this.newEmail || !this.newPassword) {
+      this.registerError = 'Please enter a username, email, and password.';
+      return;
+    }
+  // Call user service to register
+  this.userService.register(this.newUsername, this.newEmail, this.newPassword).subscribe({
+      next: (response: any) => {
+        if (response.success) {
+          this.registerMessage = 'Account created successfully! You can now log in.';
+          this.newUsername = '';
+          this.newEmail = '';
+          this.newPassword = '';
+        } else {
+          this.registerError = response.message || 'Registration failed.';
+        }
+      },
+      error: (err: any) => {
+        this.registerError = err.error?.message || 'Registration failed.';
       }
     });
   }

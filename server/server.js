@@ -1,4 +1,3 @@
-
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -36,8 +35,9 @@ function saveData(filename, data) {
 
 //Classes
 class User {
-    constructor(username, password, roles = [], groups = []) {
+    constructor(username, email, password, roles = [], groups = []) {
         this.username = username;
+        this.email = email;
         this.password = password;
         this.roles = roles; //['SuperAdmin', 'GroupAdmin', 'User']
         this.groups = groups;
@@ -65,15 +65,46 @@ let messages = loadData('messages.json', []);
 
 //Login
 app.post('/api/users/login', (req, res) => {
-        const { username, password } = req.body;
-        const foundUser = users.find(u => u.username === username && u.password === password);
-        if (foundUser) {
-                foundUser.valid = true;
-                const { password, ...userWithoutPassword } = foundUser; // Exclude password from response
-                res.json(userWithoutPassword);
-        } else {
-                res.status(401).json({ valid: false, message: 'Invalid username or password' });
-        }
+    const { username, password } = req.body;
+    const foundUser = users.find(u => u.username === username && u.password === password);
+    if (foundUser) {
+        foundUser.valid = true;
+        const { password, ...userWithoutPassword } = foundUser; // Exclude password from response
+        res.json(userWithoutPassword);
+    } else {
+        res.status(401).json({ valid: false, message: 'Invalid username or password' });
+    }
+});
+// Register endpoint
+app.post('/api/users/register', (req, res) => {
+    const { username, email, password } = req.body;
+    if (!username || !email || !password) {
+        return res.status(400).json({ success: false, message: 'Username, email, and password are required.' });
+    }
+    if (users.find(u => u.username === username)) {
+        return res.status(409).json({ success: false, message: 'Username already exists.' });
+    }
+    if (users.find(u => u.email === email)) {
+        return res.status(409).json({ success: false, message: 'Email already registered.' });
+    }
+    const newUser = new User(username, email, password, ['User'], []);
+    users.push(newUser);
+    saveData('users.json', users);
+    res.json({ success: true });
+});
+
+// Delete user endpoint
+app.delete('/api/users/:username', (req, res) => {
+    const { username } = req.params;
+    const userIndex = users.findIndex(u => u.username === username);
+    if (userIndex === -1) {
+        console.log('User not found for deletion:', username);
+        return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+    users.splice(userIndex, 1);
+    saveData('users.json', users);
+    console.log('User deleted:', username);
+    res.json({ success: true });
 });
 
 //Logout

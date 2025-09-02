@@ -1,4 +1,35 @@
 [
-    { "username": "super", "password": "123", "email":"test@example.com","roles": ["SuperAdmin"], "groups": [1, 2] },
-    { "username": "test", "password": "123","email":"test@example2.com", "roles": ["User"], "groups": [1] }
+  {
+    "username": "super",
+    "password": "123",
+    "email": "test@example.com",
+    "roles": [
+      "SuperAdmin"
+    ],
+    "groups": [
+      1,
+      2
+    ]
+  },
+  {
+    "username": "test",
+    "password": "123",
+    "email": "test@example2.com",
+    "roles": [
+      "User"
+    ],
+    "groups": [
+      1
+    ]
+  },
+  {
+    "username": "Nik",
+    "email": "Nik@raines.net.au",
+    "password": "Test",
+    "roles": [
+      "User"
+    ],
+    "groups": [],
+    "valid": false
+  }
 ]

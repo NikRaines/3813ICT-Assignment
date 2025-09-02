@@ -18,6 +18,7 @@ export class Auth {
   }
 
   logout(): Observable<void> {
+    localStorage.removeItem('currentUser');
     return this.http.post<void>(`${this.apiUrl}/api/users/logout`, {});
   }
 
@@ -35,6 +36,7 @@ export class Auth {
     return storedUser ? JSON.parse(storedUser) : null;
   }
 
+  /*
   loadProfile(): User|null {
     const data = localStorage.getItem('currentUser');
     if (data) {
@@ -43,4 +45,5 @@ export class Auth {
     }
     return null;
   }
+    */
 }

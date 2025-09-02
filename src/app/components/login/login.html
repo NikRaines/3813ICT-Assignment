@@ -7,3 +7,15 @@
   </form>
   <p *ngIf="errorMessage" class="text-danger mt-2">{{ errorMessage }}</p>
 </div>
+
+<div class="container mt-5">
+  <h2>Create Account</h2>
+  <form (ngSubmit)="register()">
+    <input [(ngModel)]="newUsername" name="newUsername" placeholder="Username" class="form-control mb-2" required>
+    <input [(ngModel)]="newEmail" name="newEmail" type="email" placeholder="Email" class="form-control mb-2" required>
+    <input [(ngModel)]="newPassword" name="newPassword" type="password" placeholder="Password" class="form-control mb-2" required>
+    <button type="submit" class="btn btn-success">Register</button>
+  </form>
+  <p *ngIf="registerMessage" class="text-success mt-2">{{ registerMessage }}</p>
+  <p *ngIf="registerError" class="text-danger mt-2">{{ registerError }}</p>
+</div>

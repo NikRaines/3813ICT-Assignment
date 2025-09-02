@@ -57,3 +57,25 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+## When completing a task
+
+git checkout development
+git add .
+git commit -m ""
+git push origin development
+
+## If development is working without issues
+
+git checkout main
+git pull origin main
+git merge development
+git push origin main
+
+## Run server
+
+1. cd server
+2. npm start
+3. new terminal
+4. ng serve
+
