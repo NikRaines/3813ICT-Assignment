@@ -7,13 +7,13 @@
 		    </span>
 		</span>
 		<span>
-            <button *ngIf="user.role === 'User'" class="btn btn-success btn-sm me-2" (click)="promoteToGroupAdmin(user)">Promote to Group Admin</button>
-			<button *ngIf="user.role === 'GroupAdmin'" class="btn btn-danger btn-sm me-2" (click)="demoteToUser(user)">Demote to User</button>
-			<button *ngIf="user.role === 'GroupAdmin'" class="btn btn-success btn-sm me-2" (click)="promoteToSuperAdmin(user)">Promote to Super Admin</button>
-			<button *ngIf="user.role === 'SuperAdmin' && user.username !== 'super'" class="btn btn-danger btn-sm me-2" (click)="demoteToGroupAdmin(user)">Demote to Group Admin</button>
-			<button *ngIf="!user.valid" class="btn btn-success btn-sm me-2" (click)="approveUser(user)">Approve</button>
-			<button *ngIf="user.valid && user.username !== 'super'" class="btn btn-secondary btn-sm me-2" disabled>Approved</button>
-			<button *ngIf="user.username !== 'super'" class="btn btn-danger btn-sm" (click)="confirmDelete(user)">Delete</button>
+			<button *ngIf="user.role === 'User'" class="btn btn-success btn-sm me-2" (click)="promoteToGroupAdmin(user)" [disabled]="currentUser?.username === user.username">Promote to Group Admin</button>
+			<button *ngIf="user.role === 'GroupAdmin'" class="btn btn-danger btn-sm me-2" (click)="demoteToUser(user)" [disabled]="currentUser?.username === user.username">Demote to User</button>
+			<button *ngIf="user.role === 'GroupAdmin'" class="btn btn-success btn-sm me-2" (click)="promoteToSuperAdmin(user)" [disabled]="currentUser?.username === user.username">Promote to Super Admin</button>
+			<button *ngIf="user.role === 'SuperAdmin'" class="btn btn-danger btn-sm me-2" (click)="demoteToGroupAdmin(user)" [disabled]="currentUser?.username === user.username || user.username === 'super'">Demote to Group Admin</button>
+			<button *ngIf="!user.valid" class="btn btn-success btn-sm me-2" (click)="approveUser(user)" [disabled]="currentUser?.username === user.username">Approve</button>
+			<button *ngIf="user.valid" class="btn btn-secondary btn-sm me-2" disabled>Approved</button>
+			<button class="btn btn-danger btn-sm" (click)="confirmDelete(user)" [disabled]="currentUser?.username === user.username || user.username === 'super'">Delete</button>
 		</span>
 	</li>
 </ul>

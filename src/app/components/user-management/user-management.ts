@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { UserService } from '../../services/user';
+import { Auth } from '../../services/auth';
 import { User } from '../../models/user.model';
 import { Notification } from '../../models/notification.model';
 
@@ -11,11 +12,12 @@ import { Notification } from '../../models/notification.model';
   templateUrl: './user-management.html',
   styleUrl: './user-management.scss'
 })
-export class UserM {  
+export class UserM {
   users: User[] = [];
   notifications: Notification[] = [];
+  currentUser: User | null = null;
 
-  constructor(private userService: UserService) {
+  constructor(private userService: UserService, private auth: Auth) {
     this.userService.getUsers().subscribe(users => {
       this.users = users;
     });
@@ -23,6 +25,8 @@ export class UserM {
     this.userService.getNotifications().subscribe(notifications => {
       this.notifications = notifications;
     });
+
+    this.currentUser = this.auth.getCurrentUser();
   }
     
   deleteNotification(notification: Notification) {
