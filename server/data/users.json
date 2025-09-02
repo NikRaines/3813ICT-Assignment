@@ -3,9 +3,7 @@
     "username": "super",
     "password": "123",
     "email": "test@example.com",
-    "roles": [
-      "SuperAdmin"
-    ],
+    "role": "SuperAdmin",
     "groups": [
       1,
       2
@@ -16,9 +14,7 @@
     "username": "test",
     "password": "123",
     "email": "test@example2.com",
-    "roles": [
-      "User"
-    ],
+    "role": "User",
     "groups": [
       1
     ],
@@ -28,9 +24,7 @@
     "username": "Nik",
     "email": "Nik@raines.net.au",
     "password": "Test",
-    "roles": [
-      "User"
-    ],
+    "role": "SuperAdmin",
     "groups": [],
     "valid": true
   },
@@ -38,9 +32,7 @@
     "username": "Nikk",
     "email": "Nik@raines.net.auu",
     "password": "Test",
-    "roles": [
-      "User"
-    ],
+    "role": "GroupAdmin",
     "groups": [],
     "valid": true
   }

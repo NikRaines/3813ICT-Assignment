@@ -29,17 +29,18 @@ function loadData(filename, defaultData) {
 }
 
 function saveData(filename, data) {
-    const filePath = path.join(__dirname, filename);
+    // Always save to the data folder
+    const filePath = path.join(__dirname, 'data', path.basename(filename));
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
 }
 
 //Classes
 class User {
-    constructor(username, email, password, roles = [], groups = []) {
+    constructor(username, email, password, role = 'User', groups = []) {
         this.username = username;
         this.email = email;
         this.password = password;
-        this.roles = roles; //['SuperAdmin', 'GroupAdmin', 'User']
+        this.role = role; // 'SuperAdmin', 'GroupAdmin', 'User'
         this.groups = groups;
         this.valid = false;
     }
@@ -57,10 +58,11 @@ class Group {
 
 
 // Load data from JSON files
-let users = loadData('users.json', []);
-let groups = loadData('groups.json', []);
-let messages = loadData('messages.json', []);
-
+let users = loadData(path.join('data', 'users.json'), []);
+let groups = loadData(path.join('data', 'groups.json'), []);
+let channels = loadData(path.join('data', 'channels.json'), []);
+let messages = loadData(path.join('data', 'messages.json'), []);
+let notifications = loadData(path.join('data', 'notifications.json'), []);
 
 
 //Login
@@ -77,7 +79,8 @@ app.post('/api/users/login', (req, res) => {
         res.status(401).json({ valid: false, message: 'Invalid username or password' });
     }
 });
-// Register endpoint
+
+//Register
 app.post('/api/users/register', (req, res) => {
     const { username, email, password } = req.body;
     if (!username || !email || !password) {
@@ -89,18 +92,15 @@ app.post('/api/users/register', (req, res) => {
     if (users.find(u => u.email === email)) {
         return res.status(409).json({ success: false, message: 'Email already registered.' });
     }
-    let roles = ['User'];
-    if (username.toLowerCase().includes('super')) {
-        roles = ['SuperAdmin'];
-    }
-    const newUser = new User(username, email, password, roles, []);
-    newUser.valid = roles.includes('SuperAdmin') ? true : false; // SuperAdmin is auto-approved
+    let role = 'User';
+    const newUser = new User(username, email, password, role, []);
+    newUser.valid = role === 'SuperAdmin' ? true : false; // SuperAdmin is auto-approved
     users.push(newUser);
     saveData('users.json', users);
     res.json({ success: true, message: 'Registration successful. Awaiting super admin approval.' });
 });
 
-// Approve user endpoint (super admin only)
+//Approve user (super admin only)
 app.post('/api/users/approve', (req, res) => {
     const { username } = req.body;
     const user = users.find(u => u.username === username);
@@ -112,7 +112,7 @@ app.post('/api/users/approve', (req, res) => {
     res.json({ success: true, message: 'User approved.' });
 });
 
-// Get all users (for user management)
+//Get all users (for user management)
 app.get('/api/users', (req, res) => {
     const usersNoPassword = users.map(u => {
         const { password, ...rest } = u;
@@ -121,7 +121,7 @@ app.get('/api/users', (req, res) => {
     res.json(usersNoPassword);
 });
 
-// Delete user endpoint
+//Delete user
 app.delete('/api/users/:username', (req, res) => {
     const { username } = req.params;
     const userIndex = users.findIndex(u => u.username === username);
@@ -133,6 +133,15 @@ app.delete('/api/users/:username', (req, res) => {
     saveData('users.json', users);
     console.log('User deleted:', username);
     res.json({ success: true });
+});
+
+//Update user roles
+app.post('/api/users/updateRoles', (req, res) => {
+    const { username, role } = req.body;
+    const user = users.find(u => u.username === username);
+    user.role = role;
+    saveData('users.json', users);
+    res.json({ success: true, message: 'Role updated.' });
 });
 
 //Logout

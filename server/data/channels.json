@@ -1,0 +1,4 @@
+[
+    { "Groupid": 1, "channel": "Random", "users": ["general", "random"] },
+    { "Groupid": 1, "channel": "General", "users": ["general"]}
+]

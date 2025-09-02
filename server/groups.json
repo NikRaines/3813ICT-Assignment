@@ -1,4 +1,0 @@
-[
-    { "id": 1, "name": "Group A", "admins": ["super"], "members": ["super", "test"], "channels": ["general", "random"] },
-    { "id": 2, "name": "Group B", "admins": ["super"], "members": ["super"], "channels": ["general"] }
-]
