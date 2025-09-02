@@ -56,11 +56,28 @@ class Group {
     }
 }
 
+class Messages {
+    constructor(groupID, channel, sender, text, timestamp) {
+        this.groupID = groupID;
+        this.channel = channel;
+        this.sender = sender;
+        this.text = text;
+        this.timestamp = timestamp;
+    }
+}
+
+class Notifications {
+    constructor(createdBy, Description, Reason) {
+        this.createdBy = createdBy;
+        this.Description = Description;
+        this.Reason = Reason;
+    }
+}
+
 
 // Load data from JSON files
 let users = loadData(path.join('data', 'users.json'), []);
 let groups = loadData(path.join('data', 'groups.json'), []);
-let channels = loadData(path.join('data', 'channels.json'), []);
 let messages = loadData(path.join('data', 'messages.json'), []);
 let notifications = loadData(path.join('data', 'notifications.json'), []);
 
@@ -124,6 +141,20 @@ app.get('/api/users', (req, res) => {
 //Get all notifications
 app.get('/api/notifications', (req, res) => {
     res.json(notifications);
+});
+
+//Get all groups
+app.get('/api/groups', (req, res) => {
+    res.json(groups);
+});
+
+// Get messages by channel
+app.get('/api/messages', (req, res) => {
+    const channel = req.query.channel;
+    const groupId = req.query.groupId;
+    // Filter messages by groupId and channel
+    const filteredMessages = messages.filter(m => m.channel === channel && m.groupID == groupId);
+    res.json(filteredMessages);
 });
 
 

@@ -35,5 +35,21 @@
     "role": "GroupAdmin",
     "groups": [],
     "valid": true
+  },
+  {
+    "username": "David",
+    "email": "David@raines.net.au",
+    "password": "Test",
+    "role": "User",
+    "groups": [],
+    "valid": true
+  },
+  {
+    "username": "Davidd",
+    "email": "David@raines.net.auu",
+    "password": "Test",
+    "role": "SuperAdmin",
+    "groups": [],
+    "valid": true
   }
 ]
