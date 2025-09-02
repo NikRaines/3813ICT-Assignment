@@ -1,15 +1,21 @@
-<h2>Users Needing Approval</h2>
+<h2>Users</h2>
 <ul class="list-group">
-			<li *ngFor="let user of users" class="list-group-item d-flex justify-content-between align-items-center">
-					<span>{{ user.username }} ({{ user.email }})
-						<span class="badge bg-primary ms-2">
-							{{ user.roles?.includes('SuperAdmin') ? 'Super Admin' : (user.roles?.includes('GroupAdmin') ? 'Group Admin' : 'User') }}
-						</span>
-					</span>
-					<span>
-						<button *ngIf="!user.valid" class="btn btn-success btn-sm me-2" (click)="approveUser(user)">Approve</button>
-						<button *ngIf="user.valid" class="btn btn-secondary btn-sm me-2" disabled>Approved</button>
-						<button class="btn btn-danger btn-sm" (click)="confirmDelete(user)">Delete</button>
-					</span>
-			</li>
-	</ul>
+	<li *ngFor="let user of users" class="list-group-item d-flex justify-content-between align-items-center">
+		<span>{{ user.username }} ({{ user.email }})
+		    <span class="badge bg-primary ms-2">
+			    {{ user.role === 'SuperAdmin' ? 'Super Admin' : (user.role === 'GroupAdmin' ? 'Group Admin' : 'User') }}
+		    </span>
+		</span>
+		<span>
+            <button *ngIf="user.role === 'User'" class="btn btn-success btn-sm me-2" (click)="promoteToGroupAdmin(user)">Promote to Group Admin</button>
+			<button *ngIf="user.role === 'GroupAdmin'" class="btn btn-danger btn-sm me-2" (click)="demoteToUser(user)">Demote to User</button>
+			<button *ngIf="user.role === 'GroupAdmin'" class="btn btn-success btn-sm me-2" (click)="promoteToSuperAdmin(user)">Promote to Super Admin</button>
+			<button *ngIf="user.role === 'SuperAdmin' && user.username !== 'super'" class="btn btn-danger btn-sm me-2" (click)="demoteToGroupAdmin(user)">Demote to Group Admin</button>
+			<button *ngIf="!user.valid" class="btn btn-success btn-sm me-2" (click)="approveUser(user)">Approve</button>
+			<button *ngIf="user.valid && user.username !== 'super'" class="btn btn-secondary btn-sm me-2" disabled>Approved</button>
+			<button *ngIf="user.username !== 'super'" class="btn btn-danger btn-sm" (click)="confirmDelete(user)">Delete</button>
+		</span>
+	</li>
+</ul>
+<br><br>
+<h2>User Notifications</h2>

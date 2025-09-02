@@ -3,10 +3,14 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { User } from '../models/user.model';
 
+
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
+  updateUserRoles(username: string, role: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/api/users/updateRoles`, { username, role });
+  }
   approveUser(username: string): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/api/users/approve`, { username });
   }

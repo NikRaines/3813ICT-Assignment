@@ -1,2 +1,2 @@
 <p>profile works!</p>
-<button (click)="deleteAccount()" class="btn btn-danger">Delete Account</button>
+<button *ngIf="user.username !== 'super'"(click)="deleteAccount()" class="btn btn-danger">Delete Account</button>
