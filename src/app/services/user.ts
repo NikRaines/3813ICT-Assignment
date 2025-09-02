@@ -7,13 +7,21 @@ import { User } from '../models/user.model';
   providedIn: 'root'
 })
 export class UserService {
-  deleteUser(username: string): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}/api/users/${username}`);
+  approveUser(username: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/api/users/approve`, { username });
   }
   private apiUrl = 'http://localhost:3000';
   constructor(private http: HttpClient) {}
 
+  deleteUser(username: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/api/users/${username}`);
+  }
+
   register(username: string, email: string, password: string): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/api/users/register`, { username, email, password });
+  }
+
+  getUsers(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.apiUrl}/api/users`);
   }
 }

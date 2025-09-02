@@ -1,1 +1,8 @@
-<p>user-management works!</p>
+<h2>Users Needing Approval</h2>
+<ul class="list-group">
+			<li *ngFor="let user of users" class="list-group-item d-flex justify-content-between align-items-center">
+				<span>{{ user.username }} ({{ user.email }})</span>
+				<button *ngIf="!user.valid" class="btn btn-success btn-sm" (click)="approveUser(user)">Approve</button>
+				<button *ngIf="user.valid" class="btn btn-secondary btn-sm" disabled>Approved</button>
+			</li>
+	</ul>

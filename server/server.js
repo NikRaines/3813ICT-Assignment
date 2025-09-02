@@ -68,7 +68,9 @@ app.post('/api/users/login', (req, res) => {
     const { username, password } = req.body;
     const foundUser = users.find(u => u.username === username && u.password === password);
     if (foundUser) {
-        foundUser.valid = true;
+        if (!foundUser.valid) {
+            return res.status(403).json({ valid: false, message: 'Account not approved by super admin.' });
+        }
         const { password, ...userWithoutPassword } = foundUser; // Exclude password from response
         res.json(userWithoutPassword);
     } else {
@@ -87,10 +89,36 @@ app.post('/api/users/register', (req, res) => {
     if (users.find(u => u.email === email)) {
         return res.status(409).json({ success: false, message: 'Email already registered.' });
     }
-    const newUser = new User(username, email, password, ['User'], []);
+    let roles = ['User'];
+    if (username.toLowerCase().includes('super')) {
+        roles = ['SuperAdmin'];
+    }
+    const newUser = new User(username, email, password, roles, []);
+    newUser.valid = roles.includes('SuperAdmin') ? true : false; // SuperAdmin is auto-approved
     users.push(newUser);
     saveData('users.json', users);
-    res.json({ success: true });
+    res.json({ success: true, message: 'Registration successful. Awaiting super admin approval.' });
+});
+
+// Approve user endpoint (super admin only)
+app.post('/api/users/approve', (req, res) => {
+    const { username } = req.body;
+    const user = users.find(u => u.username === username);
+    if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+    user.valid = true;
+    saveData('users.json', users);
+    res.json({ success: true, message: 'User approved.' });
+});
+
+// Get all users (for user management)
+app.get('/api/users', (req, res) => {
+    const usersNoPassword = users.map(u => {
+        const { password, ...rest } = u;
+        return rest;
+    });
+    res.json(usersNoPassword);
 });
 
 // Delete user endpoint

@@ -9,7 +9,8 @@
     "groups": [
       1,
       2
-    ]
+    ],
+    "valid": true
   },
   {
     "username": "test",
@@ -20,7 +21,8 @@
     ],
     "groups": [
       1
-    ]
+    ],
+    "valid": true
   },
   {
     "username": "Nik",
@@ -30,6 +32,6 @@
       "User"
     ],
     "groups": [],
-    "valid": false
+    "valid": true
   }
 ]
