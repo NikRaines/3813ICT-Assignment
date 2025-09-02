@@ -4,19 +4,16 @@
     <a class="navbar-brand" href="#">Assignment</a>
     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
       <li class="nav-item">
-        <a class="nav-link" routerLink="/dashboard">Dashboard</a>
+        <a *ngIf="user" class="nav-link" routerLink="/profile">Profile</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" routerLink="/login">Login</a>
+        <a *ngIf="user" class="nav-link" routerLink="/dashboard">Dashboard</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" routerLink="/profile">Profile</a>
+        <a *ngIf="user && (user.roles?.includes('SuperAdmin') || user.roles?.includes('GroupAdmin'))" class="nav-link" routerLink="/userManagement">User Management</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" routerLink="/userManagement">User Management</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" routerLink="/groupManagement">Group Management</a>
+        <a *ngIf="user && (user.roles?.includes('SuperAdmin') || user.roles?.includes('GroupAdmin'))" class="nav-link" routerLink="/groupManagement">Group Management</a>
       </li>
     </ul>
     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
@@ -25,7 +22,7 @@
           {{ user?.username }}
         </span>
         <a *ngIf="user" class="nav-link btn btn-outline-light ms-2 px-3 py-1" (click)="logout()">Logout</a>
-        <span *ngIf="!user" class="nav-link btn btn-outline-light px-3 py-1">Not Logged in</span>
+        <span *ngIf="!user" class="nav-link btn btn-outline-light px-3 py-1" routerLink="/login">Login</span>
       </li>
     </ul>
   </div>
