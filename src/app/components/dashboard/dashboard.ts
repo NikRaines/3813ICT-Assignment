@@ -1,7 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { Auth } from '../../services/auth';
+import { Group } from '../../models/group.model';
+import { User } from '../../models/user.model';
+import { GroupService } from '../../services/group';
 
 @Component({
   selector: 'app-dashboard',
@@ -10,5 +13,33 @@ import { CommonModule } from '@angular/common';
   styleUrl: './dashboard.scss'
 })
 export class Dashboard {
+  currentUser: User | null = null;
+  userGroups: Group[] = [];
+  selectedGroup: Group | null = null;
+  selectedChannel: string | null = null;
 
+  constructor(private auth: Auth, private groupService: GroupService) {
+    this.currentUser = this.auth.getCurrentUser();
+    this.loadGroups();
+  }
+
+  loadGroups() {
+    this.groupService.getGroups().subscribe(groups => {
+      if (this.currentUser) {
+        this.userGroups = groups.filter(g => this.currentUser!.groups.includes(g.id));
+      }
+    });
+  }
+
+  selectGroup(group: Group) {
+    this.selectedGroup = group;
+    this.selectedChannel = null;
+  }
+
+  sendMessage() {
+  }
+
+  selectChannel(channel: string) {
+    this.selectedChannel = channel;
+  }
 }

@@ -1,1 +1,32 @@
-<p>dashboard works!</p>
+<p *ngIf="userGroups.length === 0">You are not in any groups.</p>
+
+<div class="dashboard-container">
+	<div class="group-list">
+		<h2>Your Groups</h2>
+		<ul *ngIf="userGroups.length > 0" class="list-group">
+			<li *ngFor="let group of userGroups" class="list-group-item" (click)="selectGroup(group)" [class.active]="selectedGroup?.id === group.id" style="cursor:pointer;">
+				{{ group.name }}
+			</li>
+		</ul>
+		<p *ngIf="userGroups.length === 0">You are not in any groups.</p>
+	</div>
+	<div class="channel-list" *ngIf="selectedGroup">
+		<h3>Channels in {{ selectedGroup.name }}</h3>
+		<ul class="list-group">
+			<li *ngFor="let channel of selectedGroup.channels" class="list-group-item" (click)="selectChannel(channel)" [class.active]="selectedChannel === channel" style="cursor:pointer;">
+				{{ channel }}
+			</li>
+		</ul>
+	</div>
+</div>
+
+<div class="container mt-3">
+  <h2>Chat</h2>
+  <form (ngSubmit)="sendMessage()" class="d-flex mb-3">
+    <input  name="message"
+           class="form-control me-2" placeholder="Enter message">
+    <button class="btn btn-primary" type="submit">Send</button>
+  </form>
+
+
+</div>
