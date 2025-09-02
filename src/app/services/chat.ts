@@ -6,5 +6,10 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class ChatService {
-  
+  private apiUrl = 'http://localhost:3000';
+  constructor(private http: HttpClient) {}
+
+  getMessages(groupId: number, channel: string): Observable<any[]> {
+  return this.http.get<any[]>(`${this.apiUrl}/api/messages?groupId=${groupId}&channel=${channel}`);
+  }
 }

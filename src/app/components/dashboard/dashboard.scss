@@ -1,5 +1,9 @@
-
-
+.chat-container {
+	position: static;
+	margin-left: 450px;
+	width: calc(100% - 450px);
+	padding-top: 0;
+}
 .group-list {
 	position: fixed;
 	left: 0;

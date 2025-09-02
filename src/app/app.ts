@@ -13,6 +13,9 @@ import { Login } from './components/login/login';
   styleUrl: './app.scss'
 })
 export class App {
+  ngOnInit(): void {
+    this.user = this.auth.getCurrentUser();
+  }
   user: any = null;
   protected readonly title = signal('chat');
   constructor(private router: Router, private auth: Auth) {
