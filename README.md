@@ -67,10 +67,10 @@ git push origin development
 
 ## If development is working without issues
 
-git checkout main
-git pull origin main
+git checkout master
+git pull origin master
 git merge development
-git push origin main
+git push origin master
 
 ## Run server
 

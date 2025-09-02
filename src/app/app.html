@@ -20,8 +20,12 @@
       </li>
     </ul>
     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-      <li class="nav-item">
-          <a class="nav-link" (click)="logout()">Logout</a>
+      <li class="nav-item d-flex align-items-center">
+        <span *ngIf="user" class="navbar-text text-light fw-semibold me-2 px-2 py-1 rounded bg-secondary">
+          {{ user?.username }}
+        </span>
+        <a *ngIf="user" class="nav-link btn btn-outline-light ms-2 px-3 py-1" (click)="logout()">Logout</a>
+        <span *ngIf="!user" class="nav-link btn btn-outline-light px-3 py-1">Not Logged in</span>
       </li>
     </ul>
   </div>
