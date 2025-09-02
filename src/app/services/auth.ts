@@ -30,6 +30,11 @@ export class Auth {
     localStorage.setItem('currentUser', JSON.stringify(user));
   }
 
+  getCurrentUser(): User | null {
+    let storedUser = localStorage.getItem('currentUser');
+    return storedUser ? JSON.parse(storedUser) : null;
+  }
+
   loadProfile(): User|null {
     const data = localStorage.getItem('currentUser');
     if (data) {

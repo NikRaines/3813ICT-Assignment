@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ChannelChat } from './channel-chat';
+import { UserManagement } from './user-management';
 
-describe('ChannelChat', () => {
-  let component: ChannelChat;
-  let fixture: ComponentFixture<ChannelChat>;
+describe('UserManagement', () => {
+  let component: UserManagement;
+  let fixture: ComponentFixture<UserManagement>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ChannelChat]
+      imports: [UserManagement]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(ChannelChat);
+    fixture = TestBed.createComponent(UserManagement);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

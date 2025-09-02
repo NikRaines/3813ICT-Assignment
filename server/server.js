@@ -1,6 +1,9 @@
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 const PORT = 3000;
@@ -9,8 +12,27 @@ app.use(cors({ origin: "http://localhost:4200" }));
 app.use(bodyParser.json());
 
 app.get('/', (req, res) => {
-  res.send('Backend server is running!');
+    res.send('Backend server is running!');
 });
+
+//functions for loading and saving JSON
+function loadData(filename, defaultData) {
+    const filePath = path.join(__dirname, filename);
+    if (fs.existsSync(filePath)) {
+        try {
+            return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        } catch (e) {
+            console.error(`Error reading ${filename}:`, e);
+            return defaultData;
+        }
+    }
+    return defaultData;
+}
+
+function saveData(filename, data) {
+    const filePath = path.join(__dirname, filename);
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+}
 
 //Classes
 class User {
@@ -34,37 +56,24 @@ class Group {
 }
 
 
-//Users
-let users = [
-    //{ username :'', password: '', roles: [''], groups: []},
-    { username :'super', password: '123', roles: ['SuperAdmin'], groups: [1, 2]},
-    { username :'test', password: '123', roles: ['User'], groups: [1]},
-];
+// Load data from JSON files
+let users = loadData('users.json', []);
+let groups = loadData('groups.json', []);
+let messages = loadData('messages.json', []);
 
-//Groups
-let groups = [
-    //{ id: 1, name: '', admins: ['super'], members: ['', ''], channels: ['']},
-    { id: 1, name: 'Group A', admins: ['super'], members: ['super', 'test'], channels: ['general', 'random']},
-    { id: 2, name: 'Group B', admins: ['super'], members: ['super'], channels: ['general']},
-];
 
-//Messages
-let messages = [
-    //{ groupID: 1, channel: '', sender: '', text: '', timestamp: new Date()},
-    { groupID: 1, channel: 'general', sender: 'super', text: 'Group A First Message', timestamp: new Date()},
-];
 
 //Login
 app.post('/api/users/login', (req, res) => {
-    const { username, password } = req.body;
-    const user = users.find(u => u.username === username && u.password === password);
-    if (user) {
-        user.valid = true;
-        const { password, ...userWithoutPassword } = user; // Exclude password from response
-        res.json(userWithoutPassword);
-    } else {
-        res.status(401).json({ valid: false, message: 'Invalid username or password' });
-    }
+        const { username, password } = req.body;
+        const foundUser = users.find(u => u.username === username && u.password === password);
+        if (foundUser) {
+                foundUser.valid = true;
+                const { password, ...userWithoutPassword } = foundUser; // Exclude password from response
+                res.json(userWithoutPassword);
+        } else {
+                res.status(401).json({ valid: false, message: 'Invalid username or password' });
+        }
 });
 
 //Logout

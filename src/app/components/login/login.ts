@@ -23,7 +23,7 @@ export class Login {
       next: (response: User) => {
         if (response.valid !== false) {
           this.auth.saveProfile(response);
-          this.router.navigate(['/dashboard']);
+          this.router.navigate(['/profile']);
         } else {
           this.errorMessage = 'Invalid username or password';
         }
