@@ -121,6 +121,12 @@ app.get('/api/users', (req, res) => {
     res.json(usersNoPassword);
 });
 
+//Get all notifications
+app.get('/api/notifications', (req, res) => {
+    res.json(notifications);
+});
+
+
 //Delete user
 app.delete('/api/users/:username', (req, res) => {
     const { username } = req.params;
