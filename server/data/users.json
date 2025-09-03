@@ -18,7 +18,8 @@
     "role": "User",
     "groups": [],
     "appliedGroups": [
-      1
+      1,
+      2
     ],
     "valid": true
   },
@@ -58,9 +59,25 @@
     "username": "Davidd",
     "email": "David@raines.net.auu",
     "password": "Test",
-    "role": "SuperAdmin",
-    "groups": [],
+    "role": "GroupAdmin",
+    "groups": [
+      1,
+      2
+    ],
     "appliedGroups": [],
+    "valid": true
+  },
+  {
+    "username": "Muki",
+    "email": "Muki@test",
+    "password": "123",
+    "role": "User",
+    "groups": [
+      1
+    ],
+    "appliedGroups": [
+      2
+    ],
     "valid": true
   }
 ]

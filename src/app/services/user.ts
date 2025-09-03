@@ -8,6 +8,7 @@ import { Notification } from '../models/notification.model';
   providedIn: 'root'
 })
 export class UserService {  
+
   private apiUrl = 'http://localhost:3000';
   constructor(private http: HttpClient) {}
 
@@ -37,5 +38,9 @@ export class UserService {
 
   updateUserGroups(username: string, groups: number[]): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/api/users/updateGroups`, { username, groups });
+  }
+
+  updateUserAppliedGroups(username: string, appliedGroups: number[]): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/api/users/updateAppliedGroups`, { username, appliedGroups });
   }
 }

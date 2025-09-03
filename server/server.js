@@ -240,6 +240,18 @@ app.post('/api/users/updateRoles', (req, res) => {
     res.json({ success: true, message: 'Role updated.' });
 });
 
+// Update user's appliedGroups
+app.post('/api/users/updateAppliedGroups', (req, res) => {
+    const { username, appliedGroups } = req.body;
+    const user = users.find(u => u.username === username);
+    if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+    }
+    user.appliedGroups = appliedGroups;
+    saveData(path.join('data', 'users.json'), users);
+    res.json({ success: true });
+});
+
 //Logout
 app.post('/api/users/logout', (req, res) => res.json({ message: 'Logout successful' }));
 

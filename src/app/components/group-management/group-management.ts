@@ -22,8 +22,11 @@ export class GroupM {
   currentUser: User | null = null;
 
   constructor(private groupService: GroupService, private auth: Auth, private userService: UserService) {
-    this.currentUser = this.auth.getCurrentUser();
-    this.loadGroups();
+    const localUser = this.auth.getCurrentUser();
+    this.userService.getUsers().subscribe((users: User[]) => {
+      this.currentUser = users.find(u => u.username === localUser?.username) || localUser || null;
+      this.loadGroups();
+    });
   }
 
 
@@ -75,5 +78,30 @@ export class GroupM {
         this.selectGroup(group);
       });
     }
+  }
+
+  applyToGroup(group: Group) {
+    if (!this.currentUser) return;
+    const updatedAppliedGroups = [...this.currentUser.appliedGroups, group.id];
+    this.userService.updateUserAppliedGroups(this.currentUser.username, updatedAppliedGroups).subscribe(() => {
+      this.userService.getUsers().subscribe((users: User[]) => {
+        const updatedUser = users.find(u => u.username === this.currentUser!.username);
+        if (updatedUser) {
+          this.currentUser = updatedUser;
+        }
+        this.loadGroups();
+      });
+    })
+  }
+
+  approveUser(user: User, group: Group) {
+    // Remove group from appliedGroups and add to groups
+    const updatedAppliedGroups = user.appliedGroups.filter(gid => gid !== group.id);
+    const updatedGroups = [...user.groups, group.id];
+    this.userService.updateUserAppliedGroups(user.username, updatedAppliedGroups).subscribe(() => {
+      this.userService.updateUserGroups(user.username, updatedGroups).subscribe(() => {
+        this.selectGroup(group);
+      });
+    });
   }
 }

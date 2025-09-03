@@ -6,7 +6,10 @@
       "super",
       "Nikk"
     ],
-    "channels": ["general", "random"],
+    "channels": [
+      "general",
+      "random"
+    ],
     "banned": []
   },
   {
