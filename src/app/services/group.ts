@@ -28,4 +28,12 @@ export class GroupService {
   demoteAdmin(groupId: number, username: string): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/api/groups/${groupId}/demoteAdmin`, { username });
   }
+
+  createGroup(name: string, creator: string, role: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/api/groups`, { name, creator, role });
+  }
+
+  createChannel(groupId: number, channel: string, username?: string, role?: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/api/groups/${groupId}/channels`, { channel, username, role });
+  }
 }

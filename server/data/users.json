@@ -17,11 +17,10 @@
     "email": "test@example2.com",
     "role": "User",
     "groups": [
-      1
-    ],
-    "appliedGroups": [
+      1,
       2
     ],
+    "appliedGroups": [],
     "valid": true
   },
   {

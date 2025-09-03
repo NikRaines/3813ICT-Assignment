@@ -28,7 +28,7 @@
 	</form>
 	<ul class="list-group">
 		<li *ngFor="let msg of messages" class="list-group-item">
-			<strong>{{ msg.sender }}:</strong> {{ msg.text }} <span class="text-muted" style="font-size: 0.8em;">{{ msg.timestamp }}</span>
+			<strong>{{ msg.sender }}:</strong> {{ msg.text }} <span class="text-muted" style="font-size: 0.8em;"></span>
 		</li>
 		<li *ngIf="messages.length === 0" class="list-group-item text-muted">No messages in this channel.</li>
 	</ul>

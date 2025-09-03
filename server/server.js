@@ -48,12 +48,12 @@ class User {
 }
 
 class Group {
-    constructor(id, name, channels = [], admins = [], members = []) {
+    constructor(id, name, admins = [], channels = [], banned = []) {
         this.id = id;
         this.name = name;
-        this.channels = channels;
         this.admins = admins;
-        this.members = members;
+        this.channels = channels;
+        this.banned = banned;
     }
 }
 
@@ -158,6 +158,10 @@ app.delete('/api/groups/:groupId', (req, res) => {
     }
     messages = messages.filter(m => m.groupID !== groupId);
     saveData('messages.json', messages);
+    users.forEach(user => {
+        user.groups = user.groups.filter(gid => gid !== groupId);
+    });
+    saveData('users.json', users);
     groups.splice(groupIndex, 1);
     saveData('groups.json', groups);
     res.json({ success: true });
@@ -272,6 +276,40 @@ app.post('/api/groups/:groupId/demoteAdmin', (req, res) => {
     group.admins = group.admins.filter(admin => admin !== username);
     saveData('groups.json', groups);
     res.json({ success: true });
+});
+
+// Create a new group
+app.post('/api/groups', (req, res) => {
+    const { name, creator, role } = req.body;
+    const newId = groups.length > 0 ? Math.max(...groups.map(g => g.id)) + 1 : 1;
+    let admins = [];
+    let channels = [];
+    if (role === 'GroupAdmin') {
+        admins.push(creator);
+        const user = users.find(u => u.username === creator);
+        user.groups.push(newId);
+        saveData('users.json', users);
+    }
+    const newGroup = new Group(newId, name.trim(), admins, channels, []);
+    groups.push(newGroup);
+    saveData('groups.json', groups);
+    res.json({ success: true, group: newGroup });
+});
+
+// Create a new channel in a group
+app.post('/api/groups/:groupId/channels', (req, res) => {
+    const groupId = parseInt(req.params.groupId);
+    const { channel, username, role } = req.body;
+    const group = groups.find(g => g.id === groupId);
+    if (!group) {
+        return res.status(404).json({ success: false, message: 'Group not found.' });
+    }
+    if (group.channels.includes(channel.trim())) {
+        return res.status(409).json({ success: false, message: 'Channel already exists.' });
+    }
+    group.channels.push(channel.trim());
+    saveData('groups.json', groups);
+    res.json({ success: true, group });
 });
 
 //Logout

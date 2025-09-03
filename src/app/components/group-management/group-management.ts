@@ -20,6 +20,34 @@ export class GroupM {
   selectedGroup: Group | null = null;
   selectedChannel: string | null = null;
   currentUser: User | null = null;
+  newGroupName: string = '';
+  newChannelName: string = '';
+  
+  createGroup() {
+    if (!this.newGroupName.trim() || !this.currentUser) return;
+    this.groupService.createGroup(this.newGroupName.trim(), this.currentUser.username, this.currentUser.role).subscribe((res) => {
+      this.newGroupName = '';
+      if (this.currentUser && this.currentUser.role === 'GroupAdmin' && res.group && res.group.id) {
+        this.currentUser.groups.push(res.group.id);
+      }
+      this.loadGroups();
+    });
+  }
+
+  createChannel() {
+    if (!this.selectedGroup || !this.newChannelName.trim() || !this.currentUser) return;
+    this.groupService.createChannel(this.selectedGroup.id, this.newChannelName.trim(), this.currentUser.username, this.currentUser.role).subscribe((res) => {
+      this.newChannelName = '';
+      this.groupService.getGroups().subscribe(groups => {
+        const updatedGroup = groups.find(g => g.id === this.selectedGroup!.id);
+        if (updatedGroup) {
+          this.selectGroup(updatedGroup);
+        } else {
+          this.loadGroups();
+        }
+      });
+    });
+  }
 
   constructor(private groupService: GroupService, private auth: Auth, private userService: UserService) {
     const localUser = this.auth.getCurrentUser();
@@ -125,7 +153,6 @@ export class GroupM {
   }
 
   approveUser(user: User, group: Group) {
-    // Remove group from appliedGroups and add to groups
     const updatedAppliedGroups = user.appliedGroups.filter(gid => gid !== group.id);
     const updatedGroups = [...user.groups, group.id];
     this.userService.updateUserAppliedGroups(user.username, updatedAppliedGroups).subscribe(() => {
