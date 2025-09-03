@@ -3,5 +3,6 @@ export interface User {
     email: string;
     role: string;
     groups: number[];
+    appliedGroups: number[];
     valid: boolean;
 }

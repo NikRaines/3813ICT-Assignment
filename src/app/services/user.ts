@@ -7,8 +7,7 @@ import { Notification } from '../models/notification.model';
 @Injectable({
   providedIn: 'root'
 })
-export class UserService {
-  
+export class UserService {  
   private apiUrl = 'http://localhost:3000';
   constructor(private http: HttpClient) {}
 
@@ -34,5 +33,9 @@ export class UserService {
 
   getUsers(): Observable<User[]> {
     return this.http.get<User[]>(`${this.apiUrl}/api/users`);
+  }
+
+  updateUserGroups(username: string, groups: number[]): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/api/users/updateGroups`, { username, groups });
   }
 }

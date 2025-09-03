@@ -16,10 +16,10 @@
     "password": "123",
     "email": "test@example2.com",
     "role": "User",
-    "groups": [
+    "groups": [],
+    "appliedGroups": [
       1
     ],
-    "appliedGroups": [],
     "valid": true
   },
   {
@@ -36,8 +36,13 @@
     "email": "Nik@raines.net.auu",
     "password": "Test",
     "role": "GroupAdmin",
-    "groups": [],
-    "appliedGroups": [],
+    "groups": [
+      1
+    ],
+    "appliedGroups": [
+      1,
+      2
+    ],
     "valid": true
   },
   {

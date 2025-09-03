@@ -182,6 +182,26 @@ app.delete('/api/groups/:groupId/channels/:channel', (req, res) => {
     res.json({ success: true });
 });
 
+// Update user's group
+app.post('/api/users/updateGroups', (req, res) => {
+    const { username, groups: newGroups } = req.body;
+    const user = users.find(u => u.username === username);
+    if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+    }
+    const removedGroupId = user.groups.find(gid => !newGroups.includes(gid));
+    user.groups = newGroups;
+    if (removedGroupId !== undefined) {
+        const group = groups.find(g => g.id === removedGroupId);
+        if (group) {
+            group.admins = group.admins.filter(admin => admin !== username);
+        }
+    }
+    saveData(path.join('data', 'users.json'), users);
+    saveData(path.join('data', 'groups.json'), groups);
+    res.json({ success: true });
+});
+
 // Get messages by channel
 app.get('/api/messages', (req, res) => {
     const channel = req.query.channel;

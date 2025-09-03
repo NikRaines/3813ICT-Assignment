@@ -3,11 +3,10 @@
     "id": 1,
     "name": "Group A",
     "admins": [
-      "super"
+      "super",
+      "Nikk"
     ],
-    "channels": [
-      "general"
-    ],
+    "channels": ["general", "random"],
     "banned": []
   },
   {
