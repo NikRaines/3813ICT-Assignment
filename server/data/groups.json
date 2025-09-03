@@ -1,4 +1,24 @@
 [
-    { "id": 1, "name": "Group A", "admins": ["super"], "channels": ["general", "random"], "banned": [] },
-    { "id": 2, "name": "Group B", "admins": ["super"], "channels": ["general"], "banned": [] }
+  {
+    "id": 1,
+    "name": "Group A",
+    "admins": [
+      "super"
+    ],
+    "channels": [
+      "general"
+    ],
+    "banned": []
+  },
+  {
+    "id": 2,
+    "name": "Group B",
+    "admins": [
+      "super"
+    ],
+    "channels": [
+      "general"
+    ],
+    "banned": []
+  }
 ]

@@ -36,12 +36,13 @@ function saveData(filename, data) {
 
 //Classes
 class User {
-    constructor(username, email, password, role = 'User', groups = []) {
+    constructor(username, email, password, role = 'User', groups = [], appliedGroups = []) {
         this.username = username;
         this.email = email;
         this.password = password;
         this.role = role; // 'SuperAdmin', 'GroupAdmin', 'User'
         this.groups = groups;
+        this.appliedGroups = appliedGroups;
         this.valid = false;
     }
 }
@@ -110,7 +111,7 @@ app.post('/api/users/register', (req, res) => {
         return res.status(409).json({ success: false, message: 'Email already registered.' });
     }
     let role = 'User';
-    const newUser = new User(username, email, password, role, []);
+    const newUser = new User(username, email, password, role, [], []);
     newUser.valid = role === 'SuperAdmin' ? true : false; // SuperAdmin is auto-approved
     users.push(newUser);
     saveData('users.json', users);
@@ -148,6 +149,39 @@ app.get('/api/groups', (req, res) => {
     res.json(groups);
 });
 
+// Delete a group
+app.delete('/api/groups/:groupId', (req, res) => {
+    const groupId = parseInt(req.params.groupId);
+    const groupIndex = groups.findIndex(g => g.id === groupId);
+    if (groupIndex === -1) {
+        return res.status(404).json({ success: false, message: 'Group not found.' });
+    }
+    messages = messages.filter(m => m.groupID !== groupId);
+    saveData('messages.json', messages);
+    groups.splice(groupIndex, 1);
+    saveData('groups.json', groups);
+    res.json({ success: true });
+});
+
+// Delete a channel from a group
+app.delete('/api/groups/:groupId/channels/:channel', (req, res) => {
+    const groupId = parseInt(req.params.groupId);
+    const channel = req.params.channel;
+    const group = groups.find(g => g.id === groupId);
+    if (!group) {
+        return res.status(404).json({ success: false, message: 'Group not found.' });
+    }
+    const channelIndex = group.channels.indexOf(channel);
+    if (channelIndex === -1) {
+        return res.status(404).json({ success: false, message: 'Channel not found.' });
+    }
+    messages = messages.filter(m => !(m.groupID === groupId && m.channel === channel));
+    saveData('messages.json', messages);
+    group.channels.splice(channelIndex, 1);
+    saveData('groups.json', groups);
+    res.json({ success: true });
+});
+
 // Get messages by channel
 app.get('/api/messages', (req, res) => {
     const channel = req.query.channel;
@@ -166,6 +200,11 @@ app.delete('/api/users/:username', (req, res) => {
         console.log('User not found for deletion:', username);
         return res.status(404).json({ success: false, message: 'User not found.' });
     }
+    groups.forEach(group => {
+        group.members = group.members.filter(member => member !== username);
+        group.admins = group.admins.filter(admin => admin !== username);
+    });
+    saveData('groups.json', groups);
     users.splice(userIndex, 1);
     saveData('users.json', users);
     console.log('User deleted:', username);

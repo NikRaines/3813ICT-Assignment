@@ -8,6 +8,7 @@
       1,
       2
     ],
+    "appliedGroups": [],
     "valid": true
   },
   {
@@ -18,6 +19,7 @@
     "groups": [
       1
     ],
+    "appliedGroups": [],
     "valid": true
   },
   {
@@ -26,6 +28,7 @@
     "password": "Test",
     "role": "SuperAdmin",
     "groups": [],
+    "appliedGroups": [],
     "valid": true
   },
   {
@@ -34,6 +37,7 @@
     "password": "Test",
     "role": "GroupAdmin",
     "groups": [],
+    "appliedGroups": [],
     "valid": true
   },
   {
@@ -42,6 +46,7 @@
     "password": "Test",
     "role": "User",
     "groups": [],
+    "appliedGroups": [],
     "valid": true
   },
   {
@@ -50,6 +55,7 @@
     "password": "Test",
     "role": "SuperAdmin",
     "groups": [],
+    "appliedGroups": [],
     "valid": true
   }
 ]

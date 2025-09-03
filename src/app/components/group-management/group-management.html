@@ -1,1 +1,25 @@
-<p>group-management works!</p>
+<p *ngIf="Groups.length === 0">You are not in any groups.</p>
+
+<div class="dashboard-container">
+	<div class="group-list">
+		<h2>Your Groups</h2>
+		<ul *ngIf="Groups.length > 0" class="list-group">
+					<li *ngFor="let group of Groups" class="list-group-item d-flex justify-content-between align-items-center">
+						<span (click)="selectGroup(group)" style="cursor:pointer;">
+							{{ group.name }}
+						</span>
+						<button *ngIf="currentUser && (currentUser.role === 'SuperAdmin' || group.admins.includes(currentUser.username))" class="btn btn-danger btn-sm" (click)="deleteGroup(group)">Delete</button>
+					</li>
+		</ul>
+		<p *ngIf="Groups.length === 0">You are not in any groups.</p>
+	</div>
+	<div class="channel-list" *ngIf="selectedGroup">
+	<h3>Channels in {{ selectedGroup.name }}</h3>
+		<ul class="list-group">
+					<li *ngFor="let channel of selectedGroup.channels" class="list-group-item d-flex justify-content-between align-items-center">
+						<span>{{ channel }}</span>
+						<button *ngIf="currentUser && (currentUser.role === 'SuperAdmin' || selectedGroup.admins.includes(currentUser.username))" class="btn btn-danger btn-sm" (click)="deleteChannel(selectedGroup, channel)">Delete</button>
+					</li>
+		</ul>
+	</div>
+</div>
