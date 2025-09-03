@@ -21,4 +21,11 @@ export class GroupService {
   deleteChannel(groupId: number, channel: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/api/groups/${groupId}/channels/${channel}`);
   }
+  promoteAdmin(groupId: number, username: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/api/groups/${groupId}/promoteAdmin`, { username });
+  }
+
+  demoteAdmin(groupId: number, username: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/api/groups/${groupId}/demoteAdmin`, { username });
+  }
 }

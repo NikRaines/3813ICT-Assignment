@@ -29,6 +29,22 @@ export class GroupM {
     });
   }
 
+  promoteToGroupAdmin(user: User) {
+    if (!this.selectedGroup) return;
+    this.groupService.promoteAdmin(this.selectedGroup.id, user.username).subscribe(() => {
+      if (!this.selectedGroup!.admins.includes(user.username)) {
+        this.selectedGroup!.admins.push(user.username);
+      }
+    });
+  }
+
+  demoteToUser(user: User) {
+    if (!this.selectedGroup) return;
+    this.groupService.demoteAdmin(this.selectedGroup.id, user.username).subscribe(() => {
+      this.selectedGroup!.admins = this.selectedGroup!.admins.filter(admin => admin !== user.username);
+    });
+  }
+
 
   loadGroups() {
     this.groupService.getGroups().subscribe(groups => {

@@ -28,7 +28,11 @@
 						{{ user.role === 'SuperAdmin' ? 'Super Admin' : (user.role === 'GroupAdmin' && selectedGroup.admins.includes(user.username) ? 'Group Admin' : 'User') }}
 					</span>
 				</span>
-				<button *ngIf="currentUser && currentUser.role !== 'SuperAdmin' && selectedGroup.admins.includes(currentUser.username) && user.role !== 'SuperAdmin'" class="btn btn-danger btn-sm ms-2" (click)="removeUserFromGroup(user, selectedGroup)">Remove</button>
+				<span class="d-flex align-items-center">
+					<button *ngIf="currentUser && (currentUser.role === 'SuperAdmin' || selectedGroup.admins.includes(currentUser.username)) && !selectedGroup.admins.includes(user.username) && user.role === 'GroupAdmin'" class="btn btn-success btn-sm ms-2" (click)="promoteToGroupAdmin(user)">Promote to Group Admin</button>
+					<button *ngIf="currentUser && (currentUser.role === 'SuperAdmin' || selectedGroup.admins.includes(currentUser.username)) && selectedGroup.admins.includes(user.username) && user.role !== 'SuperAdmin'" class="btn btn-danger btn-sm ms-2" (click)="demoteToUser(user)">Demote to User</button>
+                    <button *ngIf="currentUser && (currentUser.role === 'SuperAdmin' || selectedGroup.admins.includes(currentUser.username)) && user.role !== 'SuperAdmin'" class="btn btn-danger btn-sm ms-2" (click)="removeUserFromGroup(user, selectedGroup)">Remove</button>
+                </span>
 			</li>
 		</ul>
 		<!-- Users Applied for Selected Group -->
