@@ -29,5 +29,9 @@
   {
     "description": "Banned DavidR from Group A",
     "reason": "test"
+  },
+  {
+    "description": "Banned Nikk from Group A",
+    "reason": "test"
   }
 ]

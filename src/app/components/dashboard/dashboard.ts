@@ -19,12 +19,14 @@ export class Dashboard {
   selectedGroup: Group | null = null;
   selectedChannel: string | null = null;
   messages: any[] = [];
+  chatInput: string = '';
 
   constructor(private auth: Auth, private groupService: GroupService, private chatService: ChatService) {
     this.currentUser = this.auth.getCurrentUser();
     this.loadGroups();
   }
 
+  //Loading groups for current user
   loadGroups() {
     this.groupService.getGroups().subscribe(groups => {
       if (this.currentUser) {
@@ -37,14 +39,13 @@ export class Dashboard {
     });
   }
 
+  //Selecting a group
   selectGroup(group: Group) {
     this.selectedGroup = group;
     this.selectedChannel = null;
   }
 
-  sendMessage() {
-  }
-
+  //Selecting a channel
   selectChannel(channel: string) {
     this.selectedChannel = channel;
     if (this.selectedGroup) {
@@ -52,6 +53,24 @@ export class Dashboard {
     }
   }
 
+  //Sending a message
+  sendMessage() {
+    if (!this.chatInput.trim()) return;
+    const newMsg = {
+      sender: this.currentUser!.username,
+      text: this.chatInput,
+      groupId: this.selectedGroup!.id,
+      channel: this.selectedChannel!,
+    };
+    this.chatService.sendMessage(newMsg).subscribe({
+      next: () => {
+        this.chatInput = '';
+        this.loadMessages(this.selectedGroup!.id, this.selectedChannel!);
+      }
+    });
+  }
+
+  //Loading messages for a specific channel
   loadMessages(groupId: number, channel: string) {
     if (!channel || !groupId) {
       this.messages = [];

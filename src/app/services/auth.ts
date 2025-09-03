@@ -9,11 +9,12 @@ import { User } from '../models/user.model';
 })
 export class Auth {
   private apiUrl = 'http://localhost:3000';
+  constructor(private http: HttpClient) {}
+
   currentUser: User|null = null;
   currentUser$ = new BehaviorSubject<User|null>(null);
 
-  constructor(private http: HttpClient) {}
-
+  //Login
   login(username: string, password: string): Observable<User> {
     return this.http.post<User>(`${this.apiUrl}/api/users/login`, { username, password });
   }
@@ -39,15 +40,4 @@ export class Auth {
     let storedUser = localStorage.getItem('currentUser');
     return storedUser ? JSON.parse(storedUser) : null;
   }
-
-  /*
-  loadProfile(): User|null {
-    const data = localStorage.getItem('currentUser');
-    if (data) {
-      this.currentUser = JSON.parse(data);
-      return this.currentUser;
-    }
-    return null;
-  }
-    */
 }

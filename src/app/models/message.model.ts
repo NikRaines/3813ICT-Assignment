@@ -3,5 +3,4 @@ export interface Message {
     sender: string;
     channel: string;
     text: string;
-    timestamp: Date;
 }

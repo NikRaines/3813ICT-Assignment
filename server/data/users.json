@@ -37,42 +37,7 @@
     "email": "Nik@raines.net.auu",
     "password": "Test",
     "role": "GroupAdmin",
-    "groups": [
-      1
-    ],
-    "appliedGroups": [
-      2
-    ],
-    "valid": true
-  },
-  {
-    "username": "David",
-    "email": "David@raines.net.au",
-    "password": "Test",
-    "role": "User",
     "groups": [],
-    "appliedGroups": [],
-    "valid": true
-  },
-  {
-    "username": "Davidd",
-    "email": "David@raines.net.auu",
-    "password": "Test",
-    "role": "GroupAdmin",
-    "groups": [
-      2
-    ],
-    "appliedGroups": [],
-    "valid": true
-  },
-  {
-    "username": "Muki",
-    "email": "Muki@test",
-    "password": "123",
-    "role": "GroupAdmin",
-    "groups": [
-      1
-    ],
     "appliedGroups": [
       2
     ],

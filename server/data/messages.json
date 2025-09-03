@@ -3,21 +3,48 @@
     "groupID": 2,
     "channel": "general",
     "sender": "super",
-    "text": "Group A First Message",
-    "timestamp": "2025-09-02T12:00:00.000Z"
+    "text": "Group A First Message"
   },
   {
     "groupID": 2,
     "channel": "general",
     "sender": "super",
-    "text": "Group A Second Message",
-    "timestamp": "2025-09-03T12:00:00.000Z"
+    "text": "Group A Second Message"
   },
   {
     "groupID": 2,
     "channel": "general",
     "sender": "super",
-    "text": "Group A Third Message",
-    "timestamp": "2025-09-04T12:00:00.000Z"
+    "text": "Group A Third Message"
+  },
+  {
+    "groupID": 1,
+    "channel": "general",
+    "sender": "super",
+    "text": "test"
+  },
+  {
+    "groupID": 1,
+    "channel": "general",
+    "sender": "Nik",
+    "text": "hi"
+  },
+  {
+    "groupID": 1,
+    "channel": "general",
+    "sender": "Nik",
+    "text": "test"
+  },
+  {
+    "groupID": 1,
+    "channel": "general",
+    "sender": "Nik",
+    "text": "test"
+  },
+  {
+    "groupID": 1,
+    "channel": "general",
+    "sender": "super",
+    "text": "hi"
   }
 ]

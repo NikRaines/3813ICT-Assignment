@@ -21,13 +21,13 @@
 <div class="chat-container" *ngIf="selectedChannel">
 	<h2>Chat</h2>
 	<form (ngSubmit)="sendMessage()" class="d-flex mb-3">
-		<input name="message" class="form-control me-2" placeholder="Enter message">
+		<input name="message" class="form-control me-2" placeholder="Enter message" [(ngModel)]="chatInput">
 		<button class="btn btn-primary" type="submit">Send</button>
 	</form>
 	<ul class="list-group">
-		<li *ngFor="let msg of messages" class="list-group-item">
-			<strong>{{ msg.sender }}:</strong> {{ msg.text }} <span class="text-muted" style="font-size: 0.8em;"></span>
-		</li>
-		<li *ngIf="messages.length === 0" class="list-group-item text-muted">No messages in this channel.</li>
+	<li *ngFor="let msg of messages.slice().reverse()" class="list-group-item">
+		<strong>{{ msg.sender }}:</strong> {{ msg.text }} <span class="text-muted" style="font-size: 0.8em;"></span>
+	</li>
+	<li *ngIf="messages.length === 0" class="list-group-item text-muted">No messages in this channel.</li>
 	</ul>
 </div>

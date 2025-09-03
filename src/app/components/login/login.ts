@@ -25,6 +25,7 @@ export class Login {
 
   constructor(private auth: Auth, private userService: UserService, private router: Router) {}
 
+  //Login after approval
   login() {
     this.auth.login(this.username, this.password).subscribe({
       next: (response: User) => {
@@ -45,6 +46,7 @@ export class Login {
     });
   }
 
+  //Register an account
   register() {
     this.registerMessage = '';
     this.registerError = '';
@@ -52,8 +54,7 @@ export class Login {
       this.registerError = 'Please enter a username, email, and password.';
       return;
     }
-  // Call user service to register
-  this.userService.register(this.newUsername, this.newEmail, this.newPassword).subscribe({
+    this.userService.register(this.newUsername, this.newEmail, this.newPassword).subscribe({
       next: (response: any) => {
         if (response.success) {
           this.registerMessage = 'Account created successfully! Please wait for approval.';

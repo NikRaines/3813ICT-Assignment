@@ -16,6 +16,18 @@ export class Profile implements OnInit{
   user!: User;
 
   constructor(private auth: Auth, private userService: UserService, private router: Router) {}
+  
+  ngOnInit(): void {
+    let storedUser = this.auth.getCurrentUser();
+    if (storedUser) {
+      this.user = storedUser;
+    }
+    else {
+      this.router.navigate(['/login']);
+    }
+  }
+
+  //User deletes account
   deleteAccount() {
     if (!this.user?.username) return;
     this.userService.deleteUser(this.user.username).subscribe({
@@ -28,13 +40,5 @@ export class Profile implements OnInit{
     });
   }
 
-  ngOnInit(): void {
-    let storedUser = this.auth.getCurrentUser();
-    if (storedUser) {
-      this.user = storedUser;
-    }
-    else {
-      this.router.navigate(['/login']);
-    }
-  }
+  
 }

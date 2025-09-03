@@ -29,12 +29,14 @@ export class UserM {
     this.currentUser = this.auth.getCurrentUser();
   }
     
+  //Delete a displayed notification
   deleteNotification(notification: Notification) {
     if (confirm('Are you sure you want to delete this notification?')) {
       this.notifications = this.notifications.filter((n: Notification) => n !== notification);
     }
   }
 
+  //Approve a user for login
   approveUser(user: User) {
     this.userService.approveUser(user.username).subscribe({
       next: () => {
@@ -43,6 +45,7 @@ export class UserM {
     });
   }
 
+  //Delete a user
   confirmDelete(user: User) {
     if (confirm(`Are you sure you want to delete user '${user.username}'?`)) {
       this.userService.deleteUser(user.username).subscribe({
@@ -53,35 +56,36 @@ export class UserM {
     }
   }
 
-    promoteToGroupAdmin(user: User) {
-      this.userService.updateUserRoles(user.username, 'GroupAdmin').subscribe({
-        next: () => {
-          user.role = 'GroupAdmin';
-        }
-      });
-    }
+  //Admin management
+  promoteToGroupAdmin(user: User) {
+    this.userService.updateUserRoles(user.username, 'GroupAdmin').subscribe({
+      next: () => {
+        user.role = 'GroupAdmin';
+      }
+    });
+  }
 
-    demoteToUser(user: User) {
-      this.userService.updateUserRoles(user.username, 'User').subscribe({
-        next: () => {
-          user.role = 'User';
-        }
-      });
-    }
+  demoteToUser(user: User) {
+    this.userService.updateUserRoles(user.username, 'User').subscribe({
+      next: () => {
+        user.role = 'User';
+      }
+    });
+  }
 
-    promoteToSuperAdmin(user: User) {
-      this.userService.updateUserRoles(user.username, 'SuperAdmin').subscribe({
-        next: () => {
-          user.role = 'SuperAdmin';
-        }
-      });
-    }
+  promoteToSuperAdmin(user: User) {
+    this.userService.updateUserRoles(user.username, 'SuperAdmin').subscribe({
+      next: () => {
+        user.role = 'SuperAdmin';
+      }
+    });
+  }
 
-    demoteToGroupAdmin(user: User) {
-      this.userService.updateUserRoles(user.username, 'GroupAdmin').subscribe({
-        next: () => {
-          user.role = 'GroupAdmin';
-        }
-      });
-    }
+  demoteToGroupAdmin(user: User) {
+    this.userService.updateUserRoles(user.username, 'GroupAdmin').subscribe({
+      next: () => {
+        user.role = 'GroupAdmin';
+      }
+    });
+  }
 }

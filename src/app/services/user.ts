@@ -11,6 +11,19 @@ export class UserService {
   private apiUrl = 'http://localhost:3000';
   constructor(private http: HttpClient) {}
 
+  getUsers(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.apiUrl}/api/users`);
+  }
+  
+  register(username: string, email: string, password: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/api/users/register`, { username, email, password });
+  }
+
+  // User Management
+  approveUser(username: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/api/users/approve`, { username });
+  }
+  
   getNotifications(): Observable<Notification[]> {
     return this.http.get<Notification[]>(`${this.apiUrl}/api/notifications`);
   }
@@ -19,22 +32,11 @@ export class UserService {
     return this.http.post<any>(`${this.apiUrl}/api/users/updateRoles`, { username, role });
   }
   
-  approveUser(username: string): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/api/users/approve`, { username });
-  }
-
   deleteUser(username: string): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/api/users/${username}`);
   }
 
-  register(username: string, email: string, password: string): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/api/users/register`, { username, email, password });
-  }
-
-  getUsers(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.apiUrl}/api/users`);
-  }
-
+  //Group Management
   updateUserGroups(username: string, groups: number[]): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/api/users/updateGroups`, { username, groups });
   }
