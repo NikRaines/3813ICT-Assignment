@@ -182,7 +182,7 @@ app.delete('/api/groups/:groupId/channels/:channel', (req, res) => {
     res.json({ success: true });
 });
 
-// Update user's group
+// Update user's group (Leave/kick)
 app.post('/api/users/updateGroups', (req, res) => {
     const { username, groups: newGroups } = req.body;
     const user = users.find(u => u.username === username);
@@ -249,6 +249,28 @@ app.post('/api/users/updateAppliedGroups', (req, res) => {
     }
     user.appliedGroups = appliedGroups;
     saveData(path.join('data', 'users.json'), users);
+    res.json({ success: true });
+});
+
+// Promote user to group admin (add to admins array)
+app.post('/api/groups/:groupId/promoteAdmin', (req, res) => {
+    const groupId = parseInt(req.params.groupId);
+    const { username } = req.body;
+    const group = groups.find(g => g.id === groupId);
+    if (!group.admins.includes(username)) {
+        group.admins.push(username);
+        saveData('groups.json', groups);
+    }
+    res.json({ success: true });
+});
+
+// Demote user from group admin (remove from admins array)
+app.post('/api/groups/:groupId/demoteAdmin', (req, res) => {
+    const groupId = parseInt(req.params.groupId);
+    const { username } = req.body;
+    const group = groups.find(g => g.id === groupId);
+    group.admins = group.admins.filter(admin => admin !== username);
+    saveData('groups.json', groups);
     res.json({ success: true });
 });
 

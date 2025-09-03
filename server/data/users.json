@@ -16,9 +16,10 @@
     "password": "123",
     "email": "test@example2.com",
     "role": "User",
-    "groups": [],
+    "groups": [
+      1
+    ],
     "appliedGroups": [
-      1,
       2
     ],
     "valid": true
@@ -41,7 +42,6 @@
       1
     ],
     "appliedGroups": [
-      1,
       2
     ],
     "valid": true
