@@ -6,6 +6,7 @@ import { Group } from '../../models/group.model';
 import { User } from '../../models/user.model';
 import { Auth } from '../../services/auth';
 import { UserService } from '../../services/user';
+import { Notification } from '../../models/notification.model';
 
 @Component({
   selector: 'app-group-management',
@@ -14,6 +15,8 @@ import { UserService } from '../../services/user';
   styleUrl: './group-management.scss'
 })
 export class GroupM {
+  notifications: Notification[] = [];
+  banReasons: { [username: string]: string } = {};
   groupUsers: User[] = [];
   appliedUsers: User[] = [];
   Groups: Group[] = [];
@@ -23,32 +26,6 @@ export class GroupM {
   newGroupName: string = '';
   newChannelName: string = '';
   
-  createGroup() {
-    if (!this.newGroupName.trim() || !this.currentUser) return;
-    this.groupService.createGroup(this.newGroupName.trim(), this.currentUser.username, this.currentUser.role).subscribe((res) => {
-      this.newGroupName = '';
-      if (this.currentUser && this.currentUser.role === 'GroupAdmin' && res.group && res.group.id) {
-        this.currentUser.groups.push(res.group.id);
-      }
-      this.loadGroups();
-    });
-  }
-
-  createChannel() {
-    if (!this.selectedGroup || !this.newChannelName.trim() || !this.currentUser) return;
-    this.groupService.createChannel(this.selectedGroup.id, this.newChannelName.trim(), this.currentUser.username, this.currentUser.role).subscribe((res) => {
-      this.newChannelName = '';
-      this.groupService.getGroups().subscribe(groups => {
-        const updatedGroup = groups.find(g => g.id === this.selectedGroup!.id);
-        if (updatedGroup) {
-          this.selectGroup(updatedGroup);
-        } else {
-          this.loadGroups();
-        }
-      });
-    });
-  }
-
   constructor(private groupService: GroupService, private auth: Auth, private userService: UserService) {
     const localUser = this.auth.getCurrentUser();
     this.userService.getUsers().subscribe((users: User[]) => {
@@ -140,6 +117,10 @@ export class GroupM {
 
   applyToGroup(group: Group) {
     if (!this.currentUser) return;
+    if (group.banned && group.banned.includes(this.currentUser.username)) {
+      alert('You have been banned from this group and cannot rejoin.');
+      return;
+    }
     const updatedAppliedGroups = [...this.currentUser.appliedGroups, group.id];
     this.userService.updateUserAppliedGroups(this.currentUser.username, updatedAppliedGroups).subscribe(() => {
       this.userService.getUsers().subscribe((users: User[]) => {
@@ -161,4 +142,57 @@ export class GroupM {
       });
     });
   }
+
+  banUser(user: User) {
+    if (!user || !this.selectedGroup) return;
+    const reason = this.banReasons[user.username];
+    if (!reason || !reason.trim()) return;
+    const description = `Banned ${user.username} from ${this.selectedGroup.name}`;
+    this.userService.banUserFromGroup(
+      user.username,
+      this.selectedGroup.id,
+      description,
+      reason,
+      this.currentUser?.username || 'system'
+    ).subscribe({
+      next: () => {
+        this.notifications.push({
+          createdBy: this.currentUser?.username || 'system',
+          description: description,
+          reason: reason
+        });
+        this.banReasons[user.username] = '';
+        if (this.selectedGroup) {
+          this.selectGroup(this.selectedGroup);
+        }
+      }
+    });
+  }
+
+  createGroup() {
+    if (!this.newGroupName.trim() || !this.currentUser) return;
+    this.groupService.createGroup(this.newGroupName.trim(), this.currentUser.username, this.currentUser.role).subscribe((res) => {
+      this.newGroupName = '';
+      if (this.currentUser && this.currentUser.role === 'GroupAdmin' && res.group && res.group.id) {
+        this.currentUser.groups.push(res.group.id);
+      }
+      this.loadGroups();
+    });
+  }
+
+  createChannel() {
+    if (!this.selectedGroup || !this.newChannelName.trim() || !this.currentUser) return;
+    this.groupService.createChannel(this.selectedGroup.id, this.newChannelName.trim(), this.currentUser.username, this.currentUser.role).subscribe((res) => {
+      this.newChannelName = '';
+      this.groupService.getGroups().subscribe(groups => {
+        const updatedGroup = groups.find(g => g.id === this.selectedGroup!.id);
+        if (updatedGroup) {
+          this.selectGroup(updatedGroup);
+        } else {
+          this.loadGroups();
+        }
+      });
+    });
+  }
+
 }

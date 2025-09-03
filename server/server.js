@@ -68,10 +68,10 @@ class Messages {
 }
 
 class Notifications {
-    constructor(createdBy, Description, Reason) {
+    constructor(createdBy, description, reason) {
         this.createdBy = createdBy;
-        this.Description = Description;
-        this.Reason = Reason;
+        this.description = description;
+        this.reason = reason;
     }
 }
 
@@ -225,8 +225,10 @@ app.delete('/api/users/:username', (req, res) => {
         return res.status(404).json({ success: false, message: 'User not found.' });
     }
     groups.forEach(group => {
-        group.members = group.members.filter(member => member !== username);
         group.admins = group.admins.filter(admin => admin !== username);
+        if (Array.isArray(group.banned)) {
+            group.banned = group.banned.filter(bannedUser => bannedUser !== username);
+        }
     });
     saveData('groups.json', groups);
     users.splice(userIndex, 1);
@@ -275,6 +277,22 @@ app.post('/api/groups/:groupId/demoteAdmin', (req, res) => {
     const group = groups.find(g => g.id === groupId);
     group.admins = group.admins.filter(admin => admin !== username);
     saveData('groups.json', groups);
+    res.json({ success: true });
+});
+
+// Ban user from group
+app.post('/api/groups/:groupId/ban', (req, res) => {
+    const groupId = parseInt(req.params.groupId);
+    const { username, reason, createdBy } = req.body;
+    const group = groups.find(g => g.id === groupId);
+    const user = users.find(u => u.username === username);
+    group.banned.push(username);
+    user.groups = user.groups.filter(gid => gid !== groupId);
+    const description = `Banned ${username} from ${group.name}`;
+    notifications.push(new Notifications(createdBy, description, reason));
+    saveData('groups.json', groups);
+    saveData('users.json', users);
+    saveData('notifications.json', notifications);
     res.json({ success: true });
 });
 

@@ -60,7 +60,6 @@
     "password": "Test",
     "role": "GroupAdmin",
     "groups": [
-      1,
       2
     ],
     "appliedGroups": [],
@@ -70,7 +69,7 @@
     "username": "Muki",
     "email": "Muki@test",
     "password": "123",
-    "role": "User",
+    "role": "GroupAdmin",
     "groups": [
       1
     ],

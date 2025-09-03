@@ -31,7 +31,7 @@ export class UserM {
     
   deleteNotification(notification: Notification) {
     if (confirm('Are you sure you want to delete this notification?')) {
-      this.notifications = this.notifications.filter((n: Notification) => n.id !== notification.id);
+      this.notifications = this.notifications.filter((n: Notification) => n !== notification);
     }
   }
 

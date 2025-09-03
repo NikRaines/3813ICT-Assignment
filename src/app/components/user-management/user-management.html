@@ -21,9 +21,9 @@
 <h2>User Notifications</h2>
 <ul class="list-group">
     <li *ngFor="let notification of notifications" class="list-group-item d-flex justify-content-between align-items-center">
-        <span class="fs-6">{{ notification.Description }}</span>
+	<span class="fs-6">{{ notification.description }}</span>
         <span class="ms-auto d-flex align-items-center">
-            <span class="me-3">Reason for Ban: {{ notification.Reason }}</span>
+			<span class="me-3">Reason for Ban: {{ notification.reason }}</span>
             <button class="btn btn-danger btn-sm" (click)="deleteNotification(notification)">Delete</button>
         </span>
     </li>

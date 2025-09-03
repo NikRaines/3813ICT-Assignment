@@ -1,5 +1,5 @@
 export interface Notification {
-	id: number;
-	Description: string;
-	Reason: string;
+	createdBy: string;
+	description: string;
+	reason: string;
 }
