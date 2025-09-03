@@ -9,8 +9,11 @@
 					<span (click)="selectGroup(group)" style="cursor:pointer;">
 						{{ group.name }}
 					</span>
-					<button *ngIf="currentUser && (currentUser.role === 'SuperAdmin' || group.admins.includes(currentUser.username))" class="btn btn-danger btn-sm" (click)="deleteGroup(group)">Delete</button>
-					<button *ngIf="currentUser && !currentUser.groups.includes(group.id) && !currentUser.appliedGroups.includes(group.id)" class="btn btn-primary btn-sm ms-2" (click)="applyToGroup(group)">Apply</button>
+					<span class="d-flex align-items-center">
+						<button *ngIf="currentUser && !currentUser.groups.includes(group.id) && !currentUser.appliedGroups.includes(group.id)" class="btn btn-primary btn-sm ms-2" (click)="applyToGroup(group)">Apply</button>
+						<button *ngIf="currentUser && currentUser.groups.includes(group.id) && currentUser.role !== 'SuperAdmin'" class="btn btn-warning btn-sm ms-2" (click)="leaveGroup(group)">Leave</button>
+						<button *ngIf="currentUser && (currentUser.role === 'SuperAdmin' || group.admins.includes(currentUser.username))" class="btn btn-danger btn-sm ms-2" (click)="deleteGroup(group)">Delete</button>
+					</span>
 				</li>
 		    </ul>
 		<p *ngIf="Groups.length === 0">You are not in any groups.</p>

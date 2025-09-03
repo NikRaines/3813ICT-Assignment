@@ -57,6 +57,20 @@ export class GroupM {
     }
   }
 
+  leaveGroup(group: Group) {
+    if (!this.currentUser) { return; }
+    if (confirm(`Are you sure you want to leave the group '${group.name}'?`)) {
+      const updatedGroups = this.currentUser.groups.filter((gid: number) => gid !== group.id);
+      this.userService.updateUserGroups(this.currentUser.username, updatedGroups).subscribe(() => {
+        this.currentUser = { ...this.currentUser!, groups: updatedGroups };
+        this.loadGroups();
+        if (this.selectedGroup?.id === group.id) {
+          this.selectedGroup = null;
+          this.selectedChannel = null;
+        }
+      });
+    }
+  }
   deleteChannel(group: Group, channel: string) {
     if (confirm(`Are you sure you want to delete the channel '${channel}' from group '${group.name}'? This will remove all messages in this channel.`)) {
       this.groupService.deleteChannel(group.id, channel).subscribe(() => {
