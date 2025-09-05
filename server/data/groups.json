@@ -1,28 +1,2 @@
 [
-  {
-    "id": 1,
-    "name": "Group A",
-    "admins": [
-      "super",
-      "Nikk"
-    ],
-    "channels": [
-      "general",
-      "random"
-    ],
-    "banned": [
-      "Nikk"
-    ]
-  },
-  {
-    "id": 2,
-    "name": "Group B",
-    "admins": [
-      "super"
-    ],
-    "channels": [
-      "general"
-    ],
-    "banned": []
-  }
 ]

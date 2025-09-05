@@ -131,20 +131,20 @@ app.post('/api/users/logout', (req, res) => res.json({ message: 'Logout successf
 app.post('/api/users/register', (req, res) => {
     const { username, email, password } = req.body;
     if (!username || !email || !password) {
-        return res.status(400).json({ success: false, message: 'Username, email, and password are required.' });
+        return res.status(400).json({ message: 'Username, email, and password are required.' });
     }
     if (users.find(u => u.username === username)) {
-        return res.status(409).json({ success: false, message: 'Username already exists.' });
+        return res.status(409).json({ message: 'Username already exists.' });
     }
     if (users.find(u => u.email === email)) {
-        return res.status(409).json({ success: false, message: 'Email already registered.' });
+        return res.status(409).json({ message: 'Email already registered.' });
     }
     let role = 'User';
     const newUser = new User(username, email, password, role, [], []);
     newUser.valid = role === 'SuperAdmin' ? true : false;
     users.push(newUser);
     saveData('users.json', users);
-    res.json({ success: true, message: 'Registration successful. Awaiting super admin approval.' });
+    res.json({ success: true});
 });
 
 //User management
@@ -153,11 +153,11 @@ app.post('/api/users/approve', (req, res) => {
     const { username } = req.body;
     const user = users.find(u => u.username === username);
     if (!user) {
-        return res.status(404).json({ success: false, message: 'User not found.' });
+        return res.status(404).json({ message: 'User not found.' });
     }
     user.valid = true;
     saveData('users.json', users);
-    res.json({ success: true, message: 'User approved.' });
+    res.json({ success: true });
 });
 
 //Update user roles (promote/demote in user management)
@@ -166,7 +166,7 @@ app.post('/api/users/updateRoles', (req, res) => {
     const user = users.find(u => u.username === username);
     user.role = role;
     saveData('users.json', users);
-    res.json({ success: true, message: 'Role updated.' });
+    res.json({ success: true });
 });
 
 //Delete user (admin delete or user self-delete)
@@ -175,7 +175,7 @@ app.delete('/api/users/:username', (req, res) => {
     const userIndex = users.findIndex(u => u.username === username);
     if (userIndex === -1) {
         console.log('User not found for deletion:', username);
-        return res.status(404).json({ success: false, message: 'User not found.' });
+        return res.status(404).json({ message: 'User not found.' });
     }
     groups.forEach(group => {
         group.admins = group.admins.filter(admin => admin !== username);
@@ -216,10 +216,10 @@ app.post('/api/groups/:groupId/channels', (req, res) => {
     const { channel, username, role } = req.body;
     const group = groups.find(g => g.id === groupId);
     if (!group) {
-        return res.status(404).json({ success: false, message: 'Group not found.' });
+        return res.status(404).json({ message: 'Group not found.' });
     }
     if (group.channels.includes(channel.trim())) {
-        return res.status(409).json({ success: false, message: 'Channel already exists.' });
+        return res.status(409).json({ message: 'Channel already exists.' });
     }
     group.channels.push(channel.trim());
     saveData('groups.json', groups);
@@ -231,7 +231,7 @@ app.delete('/api/groups/:groupId', (req, res) => {
     const groupId = parseInt(req.params.groupId);
     const groupIndex = groups.findIndex(g => g.id === groupId);
     if (groupIndex === -1) {
-        return res.status(404).json({ success: false, message: 'Group not found.' });
+        return res.status(404).json({ message: 'Group not found.' });
     }
     messages = messages.filter(m => m.groupID !== groupId);
     saveData('messages.json', messages);
@@ -250,11 +250,11 @@ app.delete('/api/groups/:groupId/channels/:channel', (req, res) => {
     const channel = req.params.channel;
     const group = groups.find(g => g.id === groupId);
     if (!group) {
-        return res.status(404).json({ success: false, message: 'Group not found.' });
+        return res.status(404).json({ message: 'Group not found.' });
     }
     const channelIndex = group.channels.indexOf(channel);
     if (channelIndex === -1) {
-        return res.status(404).json({ success: false, message: 'Channel not found.' });
+        return res.status(404).json({ message: 'Channel not found.' });
     }
     messages = messages.filter(m => !(m.groupID === groupId && m.channel === channel));
     saveData('messages.json', messages);

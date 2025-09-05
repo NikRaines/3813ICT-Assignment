@@ -5,42 +5,9 @@
     "email": "test@example.com",
     "role": "SuperAdmin",
     "groups": [
-      1,
-      2
+      1
     ],
     "appliedGroups": [],
-    "valid": true
-  },
-  {
-    "username": "test",
-    "password": "123",
-    "email": "test@example2.com",
-    "role": "User",
-    "groups": [
-      1,
-      2
-    ],
-    "appliedGroups": [],
-    "valid": true
-  },
-  {
-    "username": "Nik",
-    "email": "Nik@raines.net.au",
-    "password": "Test",
-    "role": "SuperAdmin",
-    "groups": [],
-    "appliedGroups": [],
-    "valid": true
-  },
-  {
-    "username": "Nikk",
-    "email": "Nik@raines.net.auu",
-    "password": "Test",
-    "role": "GroupAdmin",
-    "groups": [],
-    "appliedGroups": [
-      2
-    ],
     "valid": true
   }
 ]
