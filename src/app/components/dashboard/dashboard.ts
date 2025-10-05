@@ -104,7 +104,15 @@ export class Dashboard implements OnInit, OnDestroy {
     }
     this.chatService.getMessages(groupId, channel).subscribe(
       (msgs: any[]) => {
-        this.messages = msgs;
+        this.userService.getUsers().subscribe((users: User[]) => {
+          this.messages = msgs.map(msg => {
+            const user = users.find(u => u.username === msg.sender);
+            return {
+              ...msg,
+              profileImg: user ? user.profileImg || 'default-avatar.png' : 'default-avatar.png'
+            };
+          });
+        });
       },
     );
   }

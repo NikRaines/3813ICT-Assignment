@@ -54,10 +54,19 @@ function connect(server, Messages) {
       console.log('Received message:', message);
       
       try {
-        // Saving the message
         const { db, client } = await connectDB();
+        
+        // Fetch the user's profile image
+        const user = await db.collection('users').findOne({ username: message.sender });
+        const profileImg = user ? user.profileImg || 'default-avatar.png' : 'default-avatar.png';
+        
+        // Create message with profile image
         const newMsg = new Messages(message.groupId, message.channel, message.sender, message.text);
-        await db.collection('messages').insertOne(newMsg);
+        newMsg.profileImg = profileImg;
+        
+        // Save the message
+        const msgSave = new Messages(message.groupId, message.channel, message.sender, message.text);
+        await db.collection('messages').insertOne(msgSave);
         await client.close();
         
         // Create room ID and emit to that room
