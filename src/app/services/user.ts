@@ -36,6 +36,10 @@ export class UserService {
     return this.http.delete<any>(`${this.apiUrl}/api/users/${username}`);
   }
 
+  updateProfileImg(username: string, profileImg: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/api/users/updateProfileImg`, { username, profileImg });
+  }
+
   //Group Management
   updateUserGroups(username: string, groups: number[]): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/api/users/updateGroups`, { username, groups });

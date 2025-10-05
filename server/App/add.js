@@ -23,7 +23,8 @@ async function addUsers() {
                 role: "SuperAdmin",
                 groups: [],
                 appliedGroups: [],
-                valid: true 
+                valid: true,
+                profileImg: "default-avatar.png"
             }
         ];
 

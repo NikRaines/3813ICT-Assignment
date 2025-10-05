@@ -18,6 +18,11 @@
     </ul>
     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
       <li class="nav-item d-flex align-items-center">
+        <img *ngIf="user && user.profileImg" 
+             [src]="'http://localhost:3000/images/' + user.profileImg" 
+             alt="Profile Picture" 
+             class="rounded-circle me-2" 
+             style="width: 32px; height: 32px; object-fit: cover;">
         <span *ngIf="user" class="navbar-text text-light fw-semibold me-2 px-2 py-1 rounded bg-secondary">
           {{ user?.username }}
         </span>

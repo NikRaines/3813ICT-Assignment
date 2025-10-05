@@ -5,4 +5,5 @@ export interface User {
     groups: number[];
     appliedGroups: number[];
     valid: boolean;
+    profileImg: string;
 }

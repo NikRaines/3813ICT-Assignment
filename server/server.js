@@ -6,10 +6,13 @@ const http = require('http');
 const sockets = require('./socket');
 const { connect } = require('./App/app');
 const { addUsers } = require('./App/add');
+const formidable = require('formidable');
 
 const app = express();
 app.use(cors({ origin: "http://localhost:4200" }));
 app.use(express.json());
+app.use(express.static(path.join(__dirname, '../dist/imageupload/')));
+app.use('/images',express.static(path.join(__dirname , './userimages')));
 
 app.get('/', (req, res) => {
     res.send('Chat Server is running!');
@@ -17,7 +20,7 @@ app.get('/', (req, res) => {
 
 //Classes
 class User {
-    constructor(username, email, password, role = 'User', groups = [], appliedGroups = []) {
+    constructor(username, email, password, role = 'User', groups = [], appliedGroups = [], profileImg = 'default-avatar.png') {
         this.username = username; //Unique
         this.email = email; //Unique
         this.password = password;
@@ -25,6 +28,7 @@ class User {
         this.groups = groups;
         this.appliedGroups = appliedGroups;
         this.valid = false; //Login Approval
+        this.profileImg = profileImg; //Profile image path
     }
 }
 
@@ -547,6 +551,66 @@ app.post('/api/messages', async (req, res) => {
         res.json({ success: true, message: newMsg });
     } catch (error) {
         console.error('Error sending message:', error);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+
+app.post('/api/upload', (req, res) => {
+    var form = new formidable.IncomingForm({ uploadDir: './userimages' });
+    form.keepExtensions = true;
+    
+    form.on('error', function(err) {
+        throw err;
+        res.send({
+            result:"failed",
+            data:{},
+            numberofImages:0,
+            message:"Cannot upload images. Error is :" + err
+        });
+    });
+    
+    form.on('fileBegin', function(name, file){
+        file.path = form.uploadDir + "/" + (file.originalFilename || file.name || 'uploaded-file');
+    });
+    
+    form.on('file', function(field, file){
+        // Rename the file to use the original filename
+        const fs = require('fs');
+        const path = require('path');
+        const oldPath = file.filepath || file.path;
+        const newPath = path.join(form.uploadDir, file.originalFilename);
+        
+        fs.renameSync(oldPath, newPath);
+        
+        res.send({
+            result:'OK',
+            data:{'filename':file.originalFilename || file.name,'size':file.size},
+            numberOfImages:1,
+            message:"upload successful"
+        });
+    });
+    
+    form.parse(req);
+});
+
+//Update user profile image
+app.post('/api/users/updateProfileImg', async (req, res) => {
+    try {
+        const { username, profileImg } = req.body;
+        const { db, client } = await connect();
+        
+        const result = await db.collection('users').updateOne(
+            { username },
+            { $set: { profileImg } }
+        );
+        await client.close();
+        
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error updating profile image:', error);
         res.status(500).json({ error: 'Database error' });
     }
 });
