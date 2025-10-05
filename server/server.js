@@ -1,17 +1,16 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const http = require('http');
+const sockets = require('./socket');
 
 const app = express();
-const PORT = 3000;
-
 app.use(cors({ origin: "http://localhost:4200" }));
-app.use(bodyParser.json());
+app.use(express.json());
 
 app.get('/', (req, res) => {
-    res.send('Backend server is running!');
+    res.send('Chat Server is running!');
 });
 
 //Classes
@@ -344,5 +343,8 @@ app.post('/api/messages', (req, res) => {
     res.json({ success: true, message: newMsg });
 });
 
-//Start Server
-app.listen(PORT,() => console.log(`Server running on http://localhost:${PORT}`));
+//Start Server and Socket.io
+const server = http.createServer(app);
+sockets.connect(server, messages, saveData, Messages);
+
+require('./listen')(server);
