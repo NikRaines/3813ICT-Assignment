@@ -1,6 +1,7 @@
 const { Server } = require('socket.io');
+const { connect: connectDB } = require('./App/app');
 
-function connect(server, messages, saveData, Messages) {
+function connect(server, Messages) {
   const io = new Server(server, {
     cors: {
       origin: "http://localhost:4200",
@@ -49,18 +50,23 @@ function connect(server, messages, saveData, Messages) {
     });
 
     // Sending messages
-    socket.on('sendMessage', (message) => {
+    socket.on('sendMessage', async (message) => {
       console.log('Received message:', message);
       
-      // Saving the message
-      const newMsg = new Messages(message.groupId, message.channel, message.sender, message.text);
-      messages.push(newMsg);
-      saveData('messages.json', messages);
-      
-      // Create room ID and emit to that room
-      const roomId = `${message.groupId}-${message.channel}`;
-      io.to(roomId).emit('message', newMsg);
-      console.log(`Message sent to room ${roomId}:`, newMsg);
+      try {
+        // Saving the message
+        const { db, client } = await connectDB();
+        const newMsg = new Messages(message.groupId, message.channel, message.sender, message.text);
+        await db.collection('messages').insertOne(newMsg);
+        await client.close();
+        
+        // Create room ID and emit to that room
+        const roomId = `${message.groupId}-${message.channel}`;
+        io.to(roomId).emit('message', newMsg);
+        console.log(`Message sent to room ${roomId}:`, newMsg);
+      } catch (error) {
+        console.error('Error saving message:', error);
+      }
     });
 
     // Disconnections

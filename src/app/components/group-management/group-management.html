@@ -15,7 +15,7 @@
 					<span *ngIf="currentUser && group.banned && group.banned.includes(currentUser.username)" class="badge bg-danger ms-2">Banned</span>
 				</span>
 				<span class="d-flex align-items-center">
-					<button *ngIf="currentUser && !currentUser.groups.includes(group.id) && !currentUser.appliedGroups.includes(group.id) && !(group.banned && group.banned.includes(currentUser.username))" class="btn btn-primary btn-sm ms-2" (click)="applyToGroup(group)">Apply</button>
+					<button *ngIf="currentUser && currentUser.role !== 'SuperAdmin' && !currentUser.groups.includes(group.id) && !currentUser.appliedGroups.includes(group.id) && !(group.banned && group.banned.includes(currentUser.username))" class="btn btn-primary btn-sm ms-2" (click)="applyToGroup(group)">Apply</button>
 					<button *ngIf="currentUser && currentUser.groups.includes(group.id) && currentUser.role !== 'SuperAdmin'" class="btn btn-warning btn-sm ms-2" (click)="leaveGroup(group)">Leave</button>
 					<button *ngIf="currentUser && (currentUser.role === 'SuperAdmin' || group.admins.includes(currentUser.username))" class="btn btn-danger btn-sm ms-2" (click)="deleteGroup(group)">Delete</button>
 				</span>

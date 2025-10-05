@@ -666,6 +666,18 @@ class Notifications {
     ii. Stores the sender’s username, message, channel sent in and group sent in
     iii. Each message is linked to a group id and channel name
 
+###Commiting to github
+1. **Commiting to development branch**
+    i. git checkout development
+    ii. git add .
+    iii. git commit -m "commit"
+    iv. git push origin development
+2. **Merging development branch with master**
+    i.git checkout master
+    ii. git pull origin master
+    iii. git merge development
+    iv. git push origin master
+
 ###Starting the application
 1. **Navigate to the server folder**
     i. cd server
@@ -674,3 +686,9 @@ class Notifications {
 3. **Open a new terminal**
 4. **Start the frontend**
     i. ng serve
+
+###Resetting the database
+1. **Navigate to the App folder inside server**
+    i. cd server/App
+2. **run reset file**
+    ii. node reset.js

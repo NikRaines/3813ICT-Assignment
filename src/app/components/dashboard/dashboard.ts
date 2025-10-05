@@ -6,6 +6,7 @@ import { Group } from '../../models/group.model';
 import { User } from '../../models/user.model';
 import { GroupService } from '../../services/group';
 import { ChatService } from '../../services/chat';
+import { UserService } from '../../services/user';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -23,12 +24,15 @@ export class Dashboard implements OnInit, OnDestroy {
   chatInput: string = '';
   private messageSubscription: Subscription = new Subscription();
 
-  constructor(private auth: Auth, private groupService: GroupService, private chatService: ChatService) {
-    this.currentUser = this.auth.getCurrentUser();
+  constructor(private auth: Auth, private groupService: GroupService, private chatService: ChatService, private userService: UserService) {
+    const localUser = this.auth.getCurrentUser();
+    this.userService.getUsers().subscribe((users: User[]) => {
+      this.currentUser = users.find(u => u.username === localUser?.username) || localUser || null;
+      this.loadGroups();
+    });
   }
 
   ngOnInit(): void {
-    this.loadGroups();
     this.chatService.initSocket();
     
     this.messageSubscription = this.chatService.onMessage().subscribe((message: any) => {
