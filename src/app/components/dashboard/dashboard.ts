@@ -7,6 +7,7 @@ import { User } from '../../models/user.model';
 import { GroupService } from '../../services/group';
 import { ChatService } from '../../services/chat';
 import { UserService } from '../../services/user';
+import { ImguploadService } from '../../services/imgupload';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -22,9 +23,10 @@ export class Dashboard implements OnInit, OnDestroy {
   selectedChannel: string | null = null;
   messages: any[] = [];
   chatInput: string = '';
+  selectedImage: any = null;
   private messageSubscription: Subscription = new Subscription();
 
-  constructor(private auth: Auth, private groupService: GroupService, private chatService: ChatService, private userService: UserService) {
+  constructor(private auth: Auth, private groupService: GroupService, private chatService: ChatService, private userService: UserService, private imgUploadService: ImguploadService) {
     const localUser = this.auth.getCurrentUser();
     this.userService.getUsers().subscribe((users: User[]) => {
       this.currentUser = users.find(u => u.username === localUser?.username) || localUser || null;
@@ -94,6 +96,33 @@ export class Dashboard implements OnInit, OnDestroy {
     
     this.chatService.sendMessage(newMsg);
     this.chatInput = '';
+  }
+
+  //Image selection
+  onImageSelected(event: any): void {
+    const file = event.target.files[0];
+    this.selectedImage = file;
+  }
+
+  //Send image message
+  sendImageMessage(): void {
+    if (!this.selectedImage) return;
+
+    const fd = new FormData();
+    fd.append('image', this.selectedImage, this.selectedImage.name);
+    
+    this.imgUploadService.imgupload(fd).subscribe(res => {
+      const imageData = {
+        sender: this.currentUser!.username,
+        groupId: this.selectedGroup!.id,
+        channel: this.selectedChannel!,
+        imageUrl: res.data.filename,
+        text: ''
+      };
+      
+      this.chatService.sendMessage(imageData);
+      this.selectedImage = null;
+    });
   }
 
   //Loading old messages for a specific channel

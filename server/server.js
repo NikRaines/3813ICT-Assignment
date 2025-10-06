@@ -43,11 +43,13 @@ class Group {
 }
 
 class Messages {
-    constructor(groupID, channel, sender, text) {
+    constructor(groupID, channel, sender, text, imageUrl = null, messageType = 'text') {
         this.groupID = groupID;
         this.channel = channel;
         this.sender = sender; //usernames
         this.text = text;
+        this.imageUrl = imageUrl; // Path to uploaded image
+        this.messageType = messageType; // 'text' or 'image'
     }
 }
 

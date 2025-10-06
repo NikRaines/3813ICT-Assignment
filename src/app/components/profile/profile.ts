@@ -31,18 +31,18 @@ export class Profile implements OnInit{
     }
   }
 
+  //Image selection
   onFileSelected(event: any){
-    console.log(event)
     this.selectedfile = event.target.files[0];
   }
 
+  //Uploads image and updates user profile
   onUpload(){
     const fd = new FormData();
     fd.append('image', this.selectedfile!, this.selectedfile!.name);
     this.imgUploadService.imgupload(fd).subscribe(res=>{
       this.imagepath = res.data.filename;
       
-      // Save the image path to the user's profile in the database
       this.userService.updateProfileImg(this.user.username, this.imagepath).subscribe({
         next: (response) => {
           if (response.success) {

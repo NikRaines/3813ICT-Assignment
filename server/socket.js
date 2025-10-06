@@ -50,32 +50,22 @@ function connect(server, Messages) {
     });
 
     // Sending messages
-    socket.on('sendMessage', async (message) => {
-      console.log('Received message:', message);
-      
-      try {
+    socket.on('sendMessage', async (data) => {      
         const { db, client } = await connectDB();
         
-        // Fetch the user's profile image
-        const user = await db.collection('users').findOne({ username: message.sender });
+        const user = await db.collection('users').findOne({ username: data.sender });
         const profileImg = user ? user.profileImg || 'default-avatar.png' : 'default-avatar.png';
-        
-        // Create message with profile image
-        const newMsg = new Messages(message.groupId, message.channel, message.sender, message.text);
+        const messageType = data.imageUrl ? 'image' : 'text';
+    
+        const newMsg = new Messages(data.groupId, data.channel, data.sender, data.text || '', data.imageUrl || null, messageType);
         newMsg.profileImg = profileImg;
         
-        // Save the message
-        const msgSave = new Messages(message.groupId, message.channel, message.sender, message.text);
+        const msgSave = new Messages(data.groupId, data.channel, data.sender, data.text || '', data.imageUrl || null, messageType);
         await db.collection('messages').insertOne(msgSave);
         await client.close();
         
-        // Create room ID and emit to that room
-        const roomId = `${message.groupId}-${message.channel}`;
+        const roomId = `${data.groupId}-${data.channel}`;
         io.to(roomId).emit('message', newMsg);
-        console.log(`Message sent to room ${roomId}:`, newMsg);
-      } catch (error) {
-        console.error('Error saving message:', error);
-      }
     });
 
     // Disconnections

@@ -32,8 +32,8 @@ export class ChatService {
   }
 
   //Sending new messages
-  sendMessage(message: any): void {
-    this.socket.emit('sendMessage', message);
+  sendMessage(data: any): void {
+    this.socket.emit('sendMessage', data);
   }
 
   //Joining a chat room
