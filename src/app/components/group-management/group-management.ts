@@ -46,7 +46,7 @@ export class GroupM {
     this.selectedGroup = group;
     this.selectedChannel = null;
     this.userService.getUsers().subscribe((users: User[]) => {
-      this.groupUsers = users.filter((u: User) => (u.groups.includes(group.id)) || u.role === 'SuperAdmin');
+      this.groupUsers = users.filter((u: User) => u.groups.includes(group.id));
       this.appliedUsers = users.filter((u: User) => u.appliedGroups.includes(group.id));
     });
   }

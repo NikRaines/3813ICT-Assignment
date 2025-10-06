@@ -24,9 +24,31 @@
 		<input name="message" class="form-control me-2" placeholder="Enter message" [(ngModel)]="chatInput">
 		<button class="btn btn-primary" type="submit">Send</button>
 	</form>
+	
+	<!-- Image upload section -->
+	<div class="d-flex mb-3">
+		<input type="file" id="imageInput" class="form-control me-2" accept="image/*" (change)="onImageSelected($event)" style="flex: 1;">
+		<button class="btn btn-success" type="button" (click)="sendImageMessage()" [disabled]="!selectedImage" style="white-space: nowrap;">Send Image</button>
+	</div>
+	
 	<ul class="list-group">
-	<li *ngFor="let msg of messages.slice().reverse()" class="list-group-item">
-		<strong>{{ msg.sender }}:</strong> {{ msg.text }} <span class="text-muted" style="font-size: 0.8em;"></span>
+	<li *ngFor="let msg of messages.slice().reverse()" class="list-group-item d-flex align-items-start">
+		<img *ngIf="msg.profileImg" 
+		     [src]="'http://localhost:3000/images/' + msg.profileImg" 
+		     alt="Profile Picture" 
+		     class="rounded-circle me-2" 
+		     style="width: 24px; height: 24px; object-fit: cover;">
+		<div class="flex-grow-1">
+			<div><strong>{{ msg.sender }}:</strong></div>
+			<div *ngIf="msg.messageType === 'image'" class="mt-2">
+				<div>{{ msg.text }}</div>
+				<img [src]="'http://localhost:3000/images/' + msg.imageUrl" 
+				     alt="Shared image" 
+				     class="img-thumbnail mt-1" 
+				     style="max-width: 300px; max-height: 200px; object-fit: contain;">
+			</div>
+			<div *ngIf="msg.messageType !== 'image'">{{ msg.text }}</div>
+		</div>
 	</li>
 	<li *ngIf="messages.length === 0" class="list-group-item text-muted">No messages in this channel.</li>
 	</ul>

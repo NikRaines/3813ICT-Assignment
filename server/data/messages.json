@@ -1,2 +1,20 @@
 [
+  {
+    "groupID": 1,
+    "channel": "test",
+    "sender": "super",
+    "text": "test"
+  },
+  {
+    "groupID": 1,
+    "channel": "test",
+    "sender": "super",
+    "text": "hi"
+  },
+  {
+    "groupID": 1,
+    "channel": "test",
+    "sender": "Nik",
+    "text": "hi"
+  }
 ]

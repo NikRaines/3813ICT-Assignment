@@ -9,5 +9,18 @@
     ],
     "appliedGroups": [],
     "valid": true
+  },
+  {
+    "username": "Nik",
+    "email": "Nik@test.com",
+    "password": "123",
+    "role": "GroupAdmin",
+    "groups": [
+      1
+    ],
+    "appliedGroups": [
+      2
+    ],
+    "valid": true
   }
 ]

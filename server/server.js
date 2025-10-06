@@ -1,22 +1,26 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const http = require('http');
+const sockets = require('./socket');
+const { connect } = require('./App/app');
+const { addUsers } = require('./App/add');
+const formidable = require('formidable');
 
 const app = express();
-const PORT = 3000;
-
 app.use(cors({ origin: "http://localhost:4200" }));
-app.use(bodyParser.json());
+app.use(express.json());
+app.use(express.static(path.join(__dirname, '../dist/imageupload/')));
+app.use('/images',express.static(path.join(__dirname , './userimages')));
 
 app.get('/', (req, res) => {
-    res.send('Backend server is running!');
+    res.send('Chat Server is running!');
 });
 
 //Classes
 class User {
-    constructor(username, email, password, role = 'User', groups = [], appliedGroups = []) {
+    constructor(username, email, password, role = 'User', groups = [], appliedGroups = [], profileImg = 'default-avatar.png') {
         this.username = username; //Unique
         this.email = email; //Unique
         this.password = password;
@@ -24,6 +28,7 @@ class User {
         this.groups = groups;
         this.appliedGroups = appliedGroups;
         this.valid = false; //Login Approval
+        this.profileImg = profileImg; //Profile image path
     }
 }
 
@@ -38,11 +43,13 @@ class Group {
 }
 
 class Messages {
-    constructor(groupID, channel, sender, text) {
+    constructor(groupID, channel, sender, text, imageUrl = '', messageType = 'text') {
         this.groupID = groupID;
         this.channel = channel;
         this.sender = sender; //usernames
         this.text = text;
+        this.imageUrl = imageUrl; // Path to uploaded image
+        this.messageType = messageType; // 'text' or 'image'
     }
 }
 
@@ -54,73 +61,93 @@ class Notifications {
     }
 }
 
-
-// Load data from JSON files
-let users = loadData(path.join('data', 'users.json'), []);
-let groups = loadData(path.join('data', 'groups.json'), []);
-let messages = loadData(path.join('data', 'messages.json'), []);
-let notifications = loadData(path.join('data', 'notifications.json'), []);
-
-// Loading Json
-function loadData(filename, defaultData) {
-    const filePath = path.join(__dirname, filename);
-    if (fs.existsSync(filePath)) {
-        try {
-            return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-        } catch (e) {
-            console.error(`Error reading ${filename}:`, e);
-            return defaultData;
-        }
-    }
-    return defaultData;
-}
-
-// Saving Json
-function saveData(filename, data) {
-    const filePath = path.join(__dirname, 'data', path.basename(filename));
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
-}
-
 //Get all users (for user management)
-app.get('/api/users', (req, res) => {
-    const usersNoPassword = users.map(u => {
-        const { password, ...rest } = u;
-        return rest;
-    });
-    res.json(usersNoPassword);
+app.get('/api/users', async (req, res) => {
+    try {
+        const { db, client } = await connect();
+        const users = await db.collection('users').find({}).toArray();
+        await client.close();
+        
+        const usersNoPassword = users.map(u => {
+            const { password, ...rest } = u;
+            return rest;
+        });
+        res.json(usersNoPassword);
+    } catch (error) {
+        console.error('Error getting users:', error);
+        res.status(500).json({ error: 'Database error' });
+    }
 });
 
 //Get all notifications
-app.get('/api/notifications', (req, res) => {
-    res.json(notifications);
+app.get('/api/notifications', async (req, res) => {
+    try {
+        const { db, client } = await connect();
+        const notifications = await db.collection('notifications').find({}).toArray();
+        await client.close();
+        
+        res.json(notifications);
+    } catch (error) {
+        console.error('Error getting notifications:', error);
+        res.status(500).json({ error: 'Database error' });
+    }
 });
 
 //Get all groups
-app.get('/api/groups', (req, res) => {
-    res.json(groups);
+app.get('/api/groups', async (req, res) => {
+    try {
+        const { db, client } = await connect();
+        const groups = await db.collection('groups').find({}).toArray();
+        await client.close();
+        
+        res.json(groups);
+    } catch (error) {
+        console.error('Error getting groups:', error);
+        res.status(500).json({ error: 'Database error' });
+    }
 });
 
 // Get messages by channel
-app.get('/api/messages', (req, res) => {
-    const channel = req.query.channel;
-    const groupId = req.query.groupId;
-    // Filter messages by groupId and channel
-    const filteredMessages = messages.filter(m => m.channel === channel && m.groupID == groupId);
-    res.json(filteredMessages);
+app.get('/api/messages', async (req, res) => {
+    try {
+        const channel = req.query.channel;
+        const groupId = parseInt(req.query.groupId);
+        
+        const { db, client } = await connect();
+        const filteredMessages = await db.collection('messages').find({ 
+            channel: channel, 
+            groupID: groupId 
+        }).toArray();
+        await client.close();
+        
+        res.json(filteredMessages);
+    } catch (error) {
+        console.error('Error getting messages:', error);
+        res.status(500).json({ error: 'Database error' });
+    }
 });
 
 //Login
-app.post('/api/users/login', (req, res) => {
-    const { username, password } = req.body;
-    const foundUser = users.find(u => u.username === username && u.password === password);
-    if (foundUser) {
-        if (!foundUser.valid) {
-            return res.status(403).json({ valid: false, message: 'Account not approved by super admin.' });
+app.post('/api/users/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const { db, client } = await connect();
+        
+        const foundUser = await db.collection('users').findOne({ username, password });
+        await client.close();
+        
+        if (foundUser) {
+            if (!foundUser.valid) {
+                return res.status(403).json({ valid: false, message: 'Account not approved by super admin.' });
+            }
+            const { password, ...userWithoutPassword } = foundUser;
+            res.json(userWithoutPassword);
+        } else {
+            res.status(401).json({ valid: false, message: 'Invalid username or password' });
         }
-        const { password, ...userWithoutPassword } = foundUser; // Exclude password from response
-        res.json(userWithoutPassword);
-    } else {
-        res.status(401).json({ valid: false, message: 'Invalid username or password' });
+    } catch (error) {
+        console.error('Error during login:', error);
+        res.status(500).json({ error: 'Database error' });
     }
 });
 
@@ -128,221 +155,472 @@ app.post('/api/users/login', (req, res) => {
 app.post('/api/users/logout', (req, res) => res.json({ message: 'Logout successful' }));
 
 //Register
-app.post('/api/users/register', (req, res) => {
-    const { username, email, password } = req.body;
-    if (!username || !email || !password) {
-        return res.status(400).json({ message: 'Username, email, and password are required.' });
+app.post('/api/users/register', async (req, res) => {
+    try {
+        const { username, email, password } = req.body;
+        if (!username || !email || !password) {
+            return res.status(400).json({ message: 'Username, email, and password are required.' });
+        }
+        
+        const { db, client } = await connect();
+        
+        // Check if username already exists
+        const existingUsername = await db.collection('users').findOne({ username });
+        if (existingUsername) {
+            await client.close();
+            return res.status(409).json({ message: 'Username already exists.' });
+        }
+        
+        // Check if email already exists
+        const existingEmail = await db.collection('users').findOne({ email });
+        if (existingEmail) {
+            await client.close();
+            return res.status(409).json({ message: 'Email already registered.' });
+        }
+        
+        let role = 'User';
+        const newUser = new User(username, email, password, role, [], []);
+        newUser.valid = role === 'SuperAdmin' ? true : false;
+        
+        // Insert new user into database
+        await db.collection('users').insertOne(newUser);
+        await client.close();
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error registering user:', error);
+        res.status(500).json({ error: 'Database error' });
     }
-    if (users.find(u => u.username === username)) {
-        return res.status(409).json({ message: 'Username already exists.' });
-    }
-    if (users.find(u => u.email === email)) {
-        return res.status(409).json({ message: 'Email already registered.' });
-    }
-    let role = 'User';
-    const newUser = new User(username, email, password, role, [], []);
-    newUser.valid = role === 'SuperAdmin' ? true : false;
-    users.push(newUser);
-    saveData('users.json', users);
-    res.json({ success: true});
 });
 
 //User management
 //Approve user (login)
-app.post('/api/users/approve', (req, res) => {
-    const { username } = req.body;
-    const user = users.find(u => u.username === username);
-    if (!user) {
-        return res.status(404).json({ message: 'User not found.' });
+app.post('/api/users/approve', async (req, res) => {
+    try {
+        const { username } = req.body;
+        const { db, client } = await connect();
+        
+        const result = await db.collection('users').updateOne(
+            { username },
+            { $set: { valid: true } }
+        );
+        await client.close();
+        
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error approving user:', error);
+        res.status(500).json({ error: 'Database error' });
     }
-    user.valid = true;
-    saveData('users.json', users);
-    res.json({ success: true });
 });
 
 //Update user roles (promote/demote in user management)
-app.post('/api/users/updateRoles', (req, res) => {
-    const { username, role } = req.body;
-    const user = users.find(u => u.username === username);
-    user.role = role;
-    saveData('users.json', users);
-    res.json({ success: true });
+app.post('/api/users/updateRoles', async (req, res) => {
+    try {
+        const { username, role } = req.body;
+        const { db, client } = await connect();
+        
+        const result = await db.collection('users').updateOne(
+            { username },
+            { $set: { role } }
+        );
+        await client.close();
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error updating user roles:', error);
+        res.status(500).json({ error: 'Database error' });
+    }
 });
 
 //Delete user (admin delete or user self-delete)
-app.delete('/api/users/:username', (req, res) => {
-    const { username } = req.params;
-    const userIndex = users.findIndex(u => u.username === username);
-    if (userIndex === -1) {
-        console.log('User not found for deletion:', username);
-        return res.status(404).json({ message: 'User not found.' });
-    }
-    groups.forEach(group => {
-        group.admins = group.admins.filter(admin => admin !== username);
-        if (Array.isArray(group.banned)) {
-            group.banned = group.banned.filter(bannedUser => bannedUser !== username);
+app.delete('/api/users/:username', async (req, res) => {
+    try {
+        const { username } = req.params;
+        const { db, client } = await connect();
+        
+        const user = await db.collection('users').findOne({ username });
+        if (!user) {
+            await client.close();
+            console.log('User not found for deletion:', username);
+            return res.status(404).json({ message: 'User not found.' });
         }
-    });
-    saveData('groups.json', groups);
-    users.splice(userIndex, 1);
-    saveData('users.json', users);
-    console.log('User deleted:', username);
-    res.json({ success: true });
+        
+        await db.collection('groups').updateMany(
+            {},
+            { 
+                $pull: { 
+                    admins: username,
+                    banned: username 
+                } 
+            }
+        );
+        
+        await db.collection('users').deleteOne({ username });
+        await client.close();
+        
+        console.log('User deleted:', username);
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        res.status(500).json({ error: 'Database error' });
+    }
 });
 
 //Group management
-
 // Create a new group
-app.post('/api/groups', (req, res) => {
-    const { name, creator, role } = req.body;
-    const newId = groups.length > 0 ? Math.max(...groups.map(g => g.id)) + 1 : 1;
-    let admins = [];
-    let channels = [];
-    if (role === 'GroupAdmin') {
-        admins.push(creator);
-        const user = users.find(u => u.username === creator);
-        user.groups.push(newId);
-        saveData('users.json', users);
+app.post('/api/groups', async (req, res) => {
+    try {
+        const { name, creator, role } = req.body;
+        const { db, client } = await connect();
+        
+        const groups = await db.collection('groups').find({}).toArray();
+        const newId = groups.length > 0 ? Math.max(...groups.map(g => g.id)) + 1 : 1;
+        
+        let admins = [];
+        let channels = [];
+        
+        if (role === 'GroupAdmin') {
+            admins.push(creator);
+            await db.collection('users').updateOne(
+                { username: creator },
+                { $push: { groups: newId } }
+            );
+        }
+        
+        const newGroup = new Group(newId, name.trim(), admins, channels, []);
+        await db.collection('groups').insertOne(newGroup);
+        await client.close();
+        
+        res.json({ success: true, group: newGroup });
+    } catch (error) {
+        console.error('Error creating group:', error);
+        res.status(500).json({ error: 'Database error' });
     }
-    const newGroup = new Group(newId, name.trim(), admins, channels, []);
-    groups.push(newGroup);
-    saveData('groups.json', groups);
-    res.json({ success: true, group: newGroup });
 });
 
 // Create a new channel in a group
-app.post('/api/groups/:groupId/channels', (req, res) => {
-    const groupId = parseInt(req.params.groupId);
-    const { channel, username, role } = req.body;
-    const group = groups.find(g => g.id === groupId);
-    if (!group) {
-        return res.status(404).json({ message: 'Group not found.' });
+app.post('/api/groups/:groupId/channels', async (req, res) => {
+    try {
+        const groupId = parseInt(req.params.groupId);
+        const { channel, username, role } = req.body;
+        
+        const { db, client } = await connect();
+        const group = await db.collection('groups').findOne({ id: groupId });
+        
+        if (!group) {
+            await client.close();
+            return res.status(404).json({ message: 'Group not found.' });
+        }
+        
+        if (group.channels.includes(channel.trim())) {
+            await client.close();
+            return res.status(409).json({ message: 'Channel already exists.' });
+        }
+        
+        await db.collection('groups').updateOne(
+            { id: groupId },
+            { $push: { channels: channel.trim() } }
+        );
+        
+        const updatedGroup = await db.collection('groups').findOne({ id: groupId });
+        await client.close();
+        
+        res.json({ success: true, group: updatedGroup });
+    } catch (error) {
+        console.error('Error creating channel:', error);
+        res.status(500).json({ error: 'Database error' });
     }
-    if (group.channels.includes(channel.trim())) {
-        return res.status(409).json({ message: 'Channel already exists.' });
-    }
-    group.channels.push(channel.trim());
-    saveData('groups.json', groups);
-    res.json({ success: true, group });
 });
 
 // Delete a group
-app.delete('/api/groups/:groupId', (req, res) => {
-    const groupId = parseInt(req.params.groupId);
-    const groupIndex = groups.findIndex(g => g.id === groupId);
-    if (groupIndex === -1) {
-        return res.status(404).json({ message: 'Group not found.' });
+app.delete('/api/groups/:groupId', async (req, res) => {
+    try {
+        const groupId = parseInt(req.params.groupId);
+        const { db, client } = await connect();
+        
+        const group = await db.collection('groups').findOne({ id: groupId });
+        if (!group) {
+            await client.close();
+            return res.status(404).json({ message: 'Group not found.' });
+        }
+        
+        await db.collection('messages').deleteMany({ groupID: groupId });
+        
+        await db.collection('users').updateMany(
+            { groups: groupId },
+            { $pull: { groups: groupId } }
+        );
+        
+        await db.collection('groups').deleteOne({ id: groupId });
+        await client.close();
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error deleting group:', error);
+        res.status(500).json({ error: 'Database error' });
     }
-    messages = messages.filter(m => m.groupID !== groupId);
-    saveData('messages.json', messages);
-    users.forEach(user => {
-        user.groups = user.groups.filter(gid => gid !== groupId);
-    });
-    saveData('users.json', users);
-    groups.splice(groupIndex, 1);
-    saveData('groups.json', groups);
-    res.json({ success: true });
 });
 
 // Delete a channel
-app.delete('/api/groups/:groupId/channels/:channel', (req, res) => {
-    const groupId = parseInt(req.params.groupId);
-    const channel = req.params.channel;
-    const group = groups.find(g => g.id === groupId);
-    if (!group) {
-        return res.status(404).json({ message: 'Group not found.' });
+app.delete('/api/groups/:groupId/channels/:channel', async (req, res) => {
+    try {
+        const groupId = parseInt(req.params.groupId);
+        const channel = req.params.channel;
+        
+        const { db, client } = await connect();
+        const group = await db.collection('groups').findOne({ id: groupId });
+        if (!group) {
+            await client.close();
+            return res.status(404).json({ message: 'Group not found.' });
+        }
+        
+        const channelIndex = group.channels.indexOf(channel);
+        if (channelIndex === -1) {
+            await client.close();
+            return res.status(404).json({ message: 'Channel not found.' });
+        }
+        
+        await db.collection('messages').deleteMany({ 
+            groupID: groupId, 
+            channel: channel 
+        });
+        
+        await db.collection('groups').updateOne(
+            { id: groupId },
+            { $pull: { channels: channel } }
+        );
+        
+        await client.close();
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error deleting channel:', error);
+        res.status(500).json({ error: 'Database error' });
     }
-    const channelIndex = group.channels.indexOf(channel);
-    if (channelIndex === -1) {
-        return res.status(404).json({ message: 'Channel not found.' });
-    }
-    messages = messages.filter(m => !(m.groupID === groupId && m.channel === channel));
-    saveData('messages.json', messages);
-    group.channels.splice(channelIndex, 1);
-    saveData('groups.json', groups);
-    res.json({ success: true });
 });
 
 // Update user's appliedGroups
-app.post('/api/users/updateAppliedGroups', (req, res) => {
-    const { username, appliedGroups } = req.body;
-    const user = users.find(u => u.username === username);
-    if (!user) {
-        return res.status(404).json({ error: 'User not found' });
+app.post('/api/users/updateAppliedGroups', async (req, res) => {
+    try {
+        const { username, appliedGroups } = req.body;
+        const { db, client } = await connect();
+        
+        const user = await db.collection('users').findOne({ username: username });
+        if (!user) {
+            await client.close();
+            return res.status(404).json({ error: 'User not found' });
+        }
+        
+        await db.collection('users').updateOne(
+            { username: username },
+            { $set: { appliedGroups: appliedGroups } }
+        );
+        
+        await client.close();
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error updating applied groups:', error);
+        res.status(500).json({ error: 'Database error' });
     }
-    user.appliedGroups = appliedGroups;
-    saveData(path.join('data', 'users.json'), users);
-    res.json({ success: true });
 });
 
 // Update user's group (Leave/kick)
-app.post('/api/users/updateGroups', (req, res) => {
-    const { username, groups: newGroups } = req.body;
-    const user = users.find(u => u.username === username);
-    if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-    }
-    const removedGroupId = user.groups.find(gid => !newGroups.includes(gid));
-    user.groups = newGroups;
-    if (removedGroupId !== undefined) {
-        const group = groups.find(g => g.id === removedGroupId);
-        if (group) {
-            group.admins = group.admins.filter(admin => admin !== username);
+app.post('/api/users/updateGroups', async (req, res) => {
+    try {
+        const { username, groups: newGroups } = req.body;
+        const { db, client } = await connect();
+        
+        const user = await db.collection('users').findOne({ username: username });
+        if (!user) {
+            await client.close();
+            return res.status(404).json({ error: 'User not found' });
         }
+        
+        const removedGroupId = user.groups.find(gid => !newGroups.includes(gid));
+        
+        await db.collection('users').updateOne(
+            { username: username },
+            { $set: { groups: newGroups } }
+        );
+        
+        if (removedGroupId !== undefined) {
+            await db.collection('groups').updateOne(
+                { id: removedGroupId },
+                { $pull: { admins: username } }
+            );
+        }
+        
+        await client.close();
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error updating user groups:', error);
+        res.status(500).json({ error: 'Database error' });
     }
-    saveData(path.join('data', 'users.json'), users);
-    saveData(path.join('data', 'groups.json'), groups);
-    res.json({ success: true });
 });
 
 // Promote user to group admin (Group management)
-app.post('/api/groups/:groupId/promoteAdmin', (req, res) => {
-    const groupId = parseInt(req.params.groupId);
-    const { username } = req.body;
-    const group = groups.find(g => g.id === groupId);
-    if (!group.admins.includes(username)) {
-        group.admins.push(username);
-        saveData('groups.json', groups);
+app.post('/api/groups/:groupId/promoteAdmin', async (req, res) => {
+    try {
+        const groupId = parseInt(req.params.groupId);
+        const { username } = req.body;
+        
+        const { db, client } = await connect();
+        const group = await db.collection('groups').findOne({ id: groupId });
+        
+        if (!group.admins.includes(username)) {
+            await db.collection('groups').updateOne(
+                { id: groupId },
+                { $push: { admins: username } }
+            );
+        }
+        
+        await client.close();
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error promoting admin:', error);
+        res.status(500).json({ error: 'Database error' });
     }
-    res.json({ success: true });
 });
 
 // Demote user from group admin (Group management)
-app.post('/api/groups/:groupId/demoteAdmin', (req, res) => {
-    const groupId = parseInt(req.params.groupId);
-    const { username } = req.body;
-    const group = groups.find(g => g.id === groupId);
-    group.admins = group.admins.filter(admin => admin !== username);
-    saveData('groups.json', groups);
-    res.json({ success: true });
+app.post('/api/groups/:groupId/demoteAdmin', async (req, res) => {
+    try {
+        const groupId = parseInt(req.params.groupId);
+        const { username } = req.body;
+        
+        const { db, client } = await connect();
+        await db.collection('groups').updateOne(
+            { id: groupId },
+            { $pull: { admins: username } }
+        );
+        
+        await client.close();
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error demoting admin:', error);
+        res.status(500).json({ error: 'Database error' });
+    }
 });
 
 // Ban user from group
-app.post('/api/groups/:groupId/ban', (req, res) => {
-    const groupId = parseInt(req.params.groupId);
-    const { username, reason, createdBy } = req.body;
-    const group = groups.find(g => g.id === groupId);
-    const user = users.find(u => u.username === username);
-    group.banned.push(username);
-    user.groups = user.groups.filter(gid => gid !== groupId);
-    const description = `Banned ${username} from ${group.name}`;
-    notifications.push(new Notifications(createdBy, description, reason));
-    saveData('groups.json', groups);
-    saveData('users.json', users);
-    saveData('notifications.json', notifications);
-    res.json({ success: true });
+app.post('/api/groups/:groupId/ban', async (req, res) => {
+    try {
+        const groupId = parseInt(req.params.groupId);
+        const { username, reason, createdBy } = req.body;
+        
+        const { db, client } = await connect();
+        
+        const group = await db.collection('groups').findOne({ id: groupId });
+        
+        await db.collection('groups').updateOne(
+            { id: groupId },
+            { $push: { banned: username } }
+        );
+        
+        await db.collection('users').updateOne(
+            { username: username },
+            { $pull: { groups: groupId } }
+        );
+        
+        const description = `Banned ${username} from ${group.name}`;
+        const notification = new Notifications(createdBy, description, reason);
+        await db.collection('notifications').insertOne(notification);
+        
+        await client.close();
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error banning user:', error);
+        res.status(500).json({ error: 'Database error' });
+    }
 });
 
 //Dashboard
-
 // Send a new message
-app.post('/api/messages', (req, res) => {
-    const { groupId, channel, sender, text } = req.body;
-    const newMsg = new Messages(groupId, channel, sender, text);
-    messages.push(newMsg);
-    saveData('messages.json', messages);
-    res.json({ success: true, message: newMsg });
+app.post('/api/messages', async (req, res) => {
+    try {
+        const { groupId, channel, sender, text } = req.body;
+        const parsedGroupId = parseInt(groupId);
+        const { db, client } = await connect();
+        
+        const newMsg = new Messages(parsedGroupId, channel, sender, text);
+        await db.collection('messages').insertOne(newMsg);
+        await client.close();
+        
+        res.json({ success: true, message: newMsg });
+    } catch (error) {
+        console.error('Error sending message:', error);
+        res.status(500).json({ error: 'Database error' });
+    }
 });
 
-//Start Server
-app.listen(PORT,() => console.log(`Server running on http://localhost:${PORT}`));
+// Image upload
+app.post('/api/upload', (req, res) => {
+    var form = new formidable.IncomingForm({ uploadDir: './userimages' });
+    form.keepExtensions = true;
+    
+    form.on('error', function(err) {
+        throw err;
+        res.send({
+            result:"failed",
+            data:{},
+            numberofImages:0,
+            message:"Cannot upload images. Error is :" + err
+        });
+    });
+    
+    form.on('fileBegin', function(name, file){
+        file.path = form.uploadDir + "/" + (file.originalFilename || file.name || 'uploaded-file');
+    });
+    
+    form.on('file', function(field, file){
+        // Rename the file to use the original filename
+        const fs = require('fs');
+        const path = require('path');
+        const oldPath = file.filepath || file.path;
+        const newPath = path.join(form.uploadDir, file.originalFilename);
+        
+        fs.renameSync(oldPath, newPath);
+        
+        res.send({
+            result:'OK',
+            data:{'filename':file.originalFilename || file.name,'size':file.size},
+            numberOfImages:1,
+            message:"upload successful"
+        });
+    });
+    
+    form.parse(req);
+});
+
+// Update user profile image
+app.post('/api/users/updateProfileImg', async (req, res) => {
+    try {
+        const { username, profileImg } = req.body;
+        const { db, client } = await connect();
+        
+        const result = await db.collection('users').updateOne(
+            { username },
+            { $set: { profileImg } }
+        );
+        await client.close();
+        
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error updating profile image:', error);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+
+// Start Server and Socket.io
+const server = http.createServer(app);
+sockets.connect(server, Messages);
+
+// Initialize database with default admin user
+addUsers();
+
+require('./listen')(server);

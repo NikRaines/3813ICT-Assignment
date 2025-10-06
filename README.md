@@ -3,76 +3,86 @@
     i. Each task got a seperate commit towards the development branch when the task was functional without issues
 	ii. After the last task has been completed for the day and the development branch was functional development was merged with the master branch
 #Data Structures
-##Json Files
-1. **users.json**
-    i. Each entry represents a registered user with login details, role, group and approvals
+##MongoDB Collections
+1. **users collection**
+    i. Each document represents a registered user with login details, role, group and approvals
     ii. Username is a unique username for login
-    iii. Password is stored as a text file and does not get passed through the front end
+    iii. Password is stored as a text field and does not get passed through the front end
     iv. Email is a unique email address
     v. Role defines the user’s access level of SuperAdmin, GroupAdmin or User
     vi. Groups is an array of group ids the user currently has access to
     vii. Applied groups is an array of group ids the user has applied to join
-    viii. Valid indicated if the user has been approved for login
-  ```json
-{
+    viii. Valid indicates if the user has been approved for login
+    ix. ProfileImg stores the file name of the user's profile image
+```json
+    {
+    "_id": ObjectId("..."),
     "username": "super",
     "password": "123",
     "email": "test@example.com",
     "role": "SuperAdmin",
     "groups": [ 1, 2 ],
     "appliedGroups": [ 1 ],
-    "valid": true
-  }
+    "valid": true,
+    "profileImg": "default-avatar.png"
+    }
 ```
-2. **notifications.json**
-    i. Each entry represents a notification of a ban created by an admin
+2. **notifications collection**
+    i. Each document represents a notification of a ban created by an admin
     ii. Createdby is the username of the admin who created the notification
     iii. Description is the system created details of the username of the banned user and the group id of the group they were banned from
     iv. Reason is the admin inputted reason the user was banned
 ```json
-  {
+    {
+    "_id": ObjectId("..."),
     "createdBy": "super",
     "description": "Banned test from Group 1",
     "reason": "Spam"
-  }
+    }
 ```
-3. **messages.json**
-    i. Each entry represents a message sent by a user in a channel of a group
+3. **messages collection**
+    i. Each document represents a message sent by a user in a channel of a group
     ii. GroupID is the id of the group the message belongs to
     iii. Channel is the name of the channel within the group where the message was sent
     iv. Sender is the username of the user who sent the message
     v. Text is the content of the message
-```
+    vi. MessageType indicates if the message is `text` or `image`
+    vii. ImageUrl stores the file name of shared images
+```json
   {
+    "_id": ObjectId("..."),
     "groupID": 2,
     "channel": "general",
     "sender": "super",
-    "text": "Group A First Message"
-  },
+    "text": "Group A First Message",
+    "messageType": "text",
+    "imageUrl": "test.png"
+  }
 ```
-4. **groups.json**
-    i. Each entry represents a group in the system
+4. **groups collection**
+    i. Each document represents a group in the system
     ii. Id is the unique identifier for the group
     iii. Name is the groups displayed name
     iv. Admins is an array of the usernames that have admin rights in the group, not including super admins
-    v. channels is an array of the channels within the group
+    v. Channels is an array of the channels within the group
     vi. Banned is an array of the banned usernames from the group
-```
+```json
   {
+    "_id": ObjectId("..."),
     "id": 1,
     "name": "Group A",
     "admins": [ "super" ],
     "channels": [ "general", "random" ],
-    "banned": [ "Nik"  ]
+    "banned": [ "Nik" ]
   },
 ```
 ##Classes
 1. **User Class**
     i. Defines the blueprint for creating user objects
-    ii. Automatically sets the default role to `User` and `valid` to `false`
+    ii. Automatically sets the default role to `User` and `valid` to `false`, and `profileImg` to `default-avatar.png`
 ```
 class User {
-constructor(username, email, password, role = 'User', groups = [], appliedGroups = []) {
+constructor(username, email, password, role = 'User', groups = [], appliedGroups = [], profileImg = 'default-avatar.png') {
         this.username = username; //Unique
         this.email = email; //Unique
         this.password = password;
@@ -80,6 +90,7 @@ constructor(username, email, password, role = 'User', groups = [], appliedGroups
         this.groups = groups;
         this.appliedGroups = appliedGroups;
         this.valid = false; //Login Approval
+        this.profileImg = profileImg; //Profile image path
     }
 }
 ```
@@ -99,14 +110,16 @@ class Group {
 ```
 3. **Messages Class**
     i. Defines the blueprint for creating message objects
-    ii. No default fields
+    ii. Automatically sets the default imageUrl to '' and messageType to `text`
 ```
 class Messages {
-    constructor(groupID, channel, sender, text) {
+    constructor(groupID, channel, sender, text, imageUrl = '', messageType = 'text') {
         this.groupID = groupID;
         this.channel = channel;
         this.sender = sender; //usernames
         this.text = text;
+        this.imageUrl = imageUrl; // Path to uploaded image
+        this.messageType = messageType;
     }
 }
 ```
@@ -136,7 +149,8 @@ class Notifications {
         "role": "user",
         "groups": [1],
         "appliedGroups": [],
-        "valid": true
+        "valid": true,
+        "profileImg": "default-avatar.png"
     },
     {
         "username": "super",
@@ -144,9 +158,16 @@ class Notifications {
         "role": "SuperAdmin",
         "groups": [1],
         "appliedGroups": [],
-        "valid": true
+        "valid": true,
+        "profileImg": "default-avatar.png"
     }
 ]
+```
+**Error response**
+```json
+{
+    "error": "Database error"
+}
 ```
 2. **Getting all notifications**
     i. Endpoint is `get /api/notifications`
@@ -156,16 +177,24 @@ class Notifications {
 ```json
 [
     {
+        "_id": ObjectId("..."),
         "createdBy": "super",
-        "description": "Banned Nik from Group 1"
+        "description": "Banned Nik from Group 1",
         "reason": "spam"
     },
 	{
+        "_id": ObjectId("..."),
         "createdBy": "super",
-        "description": "Banned Nik from Group 2"
+        "description": "Banned Nik from Group 2",
         "reason": "spam"
     }
 ]
+```
+**Error response**
+```json
+{
+    "error": "Database error"
+}
 ```
 3. **Getting all groups**
     i. Endpoint is `get /api/groups`
@@ -175,20 +204,28 @@ class Notifications {
 ```json
 [
     {
+        "_id": ObjectId("..."),
         "id": 1,
-        "name": "Group A"
+        "name": "Group A",
         "admins": ["super"],
-        "channels": ["general", "random"]
+        "channels": ["general", "random"],
         "banned": ["Nik"]
     },
 	{
+        "_id": ObjectId("..."),
         "id": 2,
-        "name": "Group B"
+        "name": "Group B",
         "admins": ["super"],
-        "channels": ["general"]
+        "channels": ["general"],
         "banned": []
     }
 ]
+```
+**Error response**
+```json
+{
+    "error": "Database error"
+}
 ```
 4. **Get all messages in a channel**
     i. Endpoint is `get /api/messages`
@@ -199,18 +236,32 @@ class Notifications {
 ```json
 [
     {
+        "_id": ObjectId("..."),
         "groupID": 2,
-        "channel": "general"
+        "channel": "general",
         "sender": "super",
-        "text": "Group A first message"
+        "text": "Group A first message",
+        "messageType": "text",
+        "imageUrl": "",
+        "profileImg": "default-avatar.png"
     },
 	{
+        "_id": ObjectId("..."),
         "groupID": 2,
-        "channel": "general"
+        "channel": "general",
         "sender": "Nik",
-        "text": "Group A second message"
+        "text": "Group A second message",
+        "messageType": "text",
+        "imageUrl": "",
+        "profileImg": "default-avatar.png"
     }
 ]
+```
+**Error response**
+```json
+{
+    "error": "Database error"
+}
 ```
 5. **Login**
     i. Endpoint is `post /api/users/login`
@@ -227,12 +278,14 @@ class Notifications {
 {
     "username": "Nik",
     "email": "Nik@example.com",
-    "role": "user",
+    "role": "User",
     "groups": [1],
     "appliedGroups": [],
-    "valid": true
+    "valid": true,
+    "profileImg": "default-avatar.png"
 }
 ```
+
 **Error response**
 ```json
 {
@@ -243,7 +296,12 @@ class Notifications {
 ```json
 {
     "valid": false,
-    "message": "Invalid username or password."
+    "message": "Invalid username or password"
+}
+```
+```json
+{
+    "error": "Database error"
 }
 ```
 6. **Logout**
@@ -289,6 +347,11 @@ class Notifications {
     "message": "Email already registered."
 }
 ```
+```json
+{
+    "error": "Database error"
+}
+```
 8. **Approve user for login**
     i. Endpoint is `post /api/users/approve`
     ii. Approves a user account for login
@@ -310,6 +373,11 @@ class Notifications {
     "message": "User not found."
 }
 ```
+```json
+{
+    "error": "Database error"
+}
+```
 9. **Update user roles**
     i. Endpoint is `post /api/user/updateRoles`
     ii. updates the role of a specific user
@@ -329,7 +397,7 @@ class Notifications {
 **Error response**
 ```json
 {
-    "message": "User not found."
+    "error": "Database error"
 }
 ```
 10. **Delete user**
@@ -350,6 +418,11 @@ class Notifications {
     "message": "User not found."
 }
 ```
+```json
+{
+    "error": "Database error"
+}
+```
 11. **Create a new group**
     i. Endpoint is `post /api/groups`
     ii. Creates a new group with a unique Id
@@ -367,12 +440,19 @@ class Notifications {
 {
     "success": true,
     "group": {
+        "_id": ObjectId("..."),
         "id": 1,
         "name": "Group A",
-        "admins": ["super"]
+        "admins": ["super"],
         "channels": [],
         "banned": []
     }
+}
+```
+**Error response**
+```json
+{
+    "error": "Database error"
 }
 ```
 12.  **Create a new channel within a group**
@@ -392,9 +472,10 @@ class Notifications {
 {
     "success": true,
     "group": {
+        "_id": ObjectId("..."),
         "id": 1,
         "name": "Group A",
-        "admins": ["super"]
+        "admins": ["super"],
         "channels": ["general", "random"],
         "banned": []
     }
@@ -409,6 +490,11 @@ class Notifications {
 ```json
 {
     "message": "Channel already exists."
+}
+```
+```json
+{
+    "error": "Database error"
 }
 ```
 13. **Delete a group**
@@ -428,6 +514,11 @@ class Notifications {
 ```json
 {
     "message": "Group not found"
+}
+```
+```json
+{
+    "error": "Database error"
 }
 ```
 14. **Delete a channel**
@@ -453,6 +544,11 @@ class Notifications {
     "message": "Channel not found"
 }
 ```
+```json
+{
+    "error": "Database error"
+}
+```
 15. **Apply to a group**
     i. Endpoint is `post /api/users/updateAppliedGroups`
     ii. Updates the list of groups a user has applied to join
@@ -473,6 +569,11 @@ class Notifications {
 ```json
 {
     "error": "User not found"
+}
+```
+```json
+{
+    "error": "Database error"
 }
 ```
 16. **Update user’s group**
@@ -498,6 +599,11 @@ class Notifications {
     "error": "User not found"
 }
 ```
+```json
+{
+    "error": "Database error"
+}
+```
 17. **Promoting a user in a group**
     i. Endpoint is `post /api/groups/:groupId/promoteAdmin`
     ii. Adds a user to a group's admin list
@@ -514,6 +620,12 @@ class Notifications {
     "success": true
 }
 ```
+**Error response**
+```json
+{
+    "error": "Database error"
+}
+```
 18. **Demoting a group admin in a group**
     i. Endpoint is `post /api/groups/:groupId/demoteAdmin`
     ii. Removes a user from a group's admin list, demoting them back to a normal user
@@ -528,6 +640,12 @@ class Notifications {
 ```json
 {
     "success": true
+}
+```
+**Error response**
+```json
+{
+    "error": "Database error"
 }
 ```
 19. **Banning a user from a group**
@@ -547,13 +665,19 @@ class Notifications {
     "success": true
 }
 ```
+**Error response**
+```json
+{
+    "error": "Database error"
+}
+```
 20. **Send a message within a channel**
     i. Endpoint is `post /api/messages`
     ii. Creates and stores a new message
 **Input Request Body**
 ```json
 {
-    "groupid": 1,
+    "groupId": 1,
     "channel": "general",
     "sender": "super",
     "text": "Group a First Message"
@@ -564,14 +688,192 @@ class Notifications {
 {
     "success": true,
     "message": {
-        "groupid": 1,
+        "_id": ObjectId("..."),
+        "groupID": 1,
         "channel": "general",
         "sender": "super",
-        "text": "Group a First Message"
+        "text": "Group a First Message",
+        "messageType": "text",
+        "imageUrl": "",
+        "profileImg": "default-avatar.png"
     }
 }
 ```
-#Components, Services and Models
+**Error response**
+```json
+{
+    "error": "Database error"
+}
+```
+21. **Upload Image File**
+    i. Endpoint is `post /api/upload`
+    ii. Used for image uploads for profile and chat images
+    iii. Saves files to server/userimages
+**Input Request Body**
+```json
+FormData with image file
+```
+**Output**
+```json
+{
+    "result": "OK",
+    "data": {
+        "filename": "image.jpg"
+    },
+    "numberOfImages": 1,
+    "message": "upload successful"
+}
+```
+22. **Update User Profile Image**
+    i. Endpoint is `post /api/users/updateProfileImg`
+    ii. Updates the users profile image path in the databse
+**Input Request Body**
+```json
+{
+    "username": "super",
+    "profileImg": "image.jpg"
+}
+```
+**Output**
+```json
+{
+    "success": true,
+}
+```
+**Error response**
+```json
+{
+    "message": "User not found."
+}
+```
+```json
+{
+    "error": "Database error"
+}
+```
+
+#Socket.io Events
+1. **Send Message**
+    i. Event is `sendMessage`
+    ii. Handles message sending to all users in a specific channel room
+    iii. Supports both text messages and image messages
+    iv. Automatically adds sender's profile image to message data
+    v. Saves message to Database
+    vi. Removes old messages keeping only newest 5 per channel (used for when a user loads into a chat)
+**Input Data**
+```json
+{
+    "sender": "super",
+    "text": "Hello",
+    "groupId": 1,
+    "channel": "general",
+    "imageUrl": ""
+}
+```
+**Output**
+```json
+{
+    "_id": ObjectId("..."),
+    "groupID": 1,
+    "channel": "general", 
+    "sender": "super",
+    "text": "Hello",
+    "messageType": "text",
+    "imageUrl": "",
+    "profileImg": "default-avatar.png"
+}
+```
+2. **Join Room**
+    i. Event is `joinRoom`
+    ii. Adds user to a specific channel
+    iii. Room format is `${groupId}-${channel}`
+    iv. Sends system message to all users announcing user joined
+**Input Data**
+```json
+{
+    "groupId": 1,
+    "channel": "general",
+    "username": "super"
+}
+```
+**System Message**
+```json
+{
+    "sender": "System",
+    "text": "super has joined the chat",
+    "groupID": 1,
+    "channel": "general"
+}
+```
+3. **Leave Room**
+    i. Event is `leaveRoom`
+    ii. Removes user from a specific channel
+    iii. Sends system message to all users announcing user left
+**Input Data**
+```json
+{
+    "groupId": 1,
+    "channel": "general",
+    "username": "super"
+}
+```
+**System Message**
+```json
+{
+    "sender": "System",
+    "text": "super has left the chat",
+    "groupID": 1,
+    "channel": "general"
+}
+```
+
+#Client-Server Responsibility Division
+##Server Responsibilities
+1. **Authentication and Authorization**
+    i. Validates user login credentials against database users collection
+    ii. Manages user sessions and login state
+    iii. Enforces role-based access control
+2. **Database Operations**
+    i. All database operations for users, groups, messages, notifications collections
+    ii. Data validation and sanitization before database insertion
+    iii. Automatic removal of old messages by only keeping the 5 most recent messages per channel
+3. **File Management**
+    i. Handles image uploads via formidable
+    ii. Saves uploaded files to server/userimages directory with original filenames
+    iii. Sends images through /images route
+4. **Chat Operations**
+    i. Manages Socket.io server connections and disconnections
+    ii. Handles room-based messaging for group channels
+    iii. Broadcasts messages to all connected users in specific rooms
+    iv. Maintains active user connections and room memberships
+5. **REST API Services**
+    i. Provides HTTP endpoints for operations
+    ii. Returns JSON responses
+    iii. Handles concurrent requests and database changes
+
+##Client Responsibilities
+1. **User Interface**
+    i. Renders all Angular components and manages component state
+    ii. Handles user input validation and form submissions
+    iii. Manages component navigation and routing transitions
+2. **Local State Management**
+    i. Stores user authentication data in localStorage
+    ii. Synchronizes local state with server responses
+    iii. Handles user session persistence
+3. **API Communication**
+    i. Makes HTTP requests to server REST endpoints
+    ii. Handles API responses
+4. **Chat Features**
+    i. Maintains Socket.io client connection to server
+    ii. Listens for message broadcasts
+    iii. Updates UI when receiving Socket events
+    iv. Manages room joining and leaving for chatting
+5. **Routing and Navigation**
+    i. Client-side routing using Angular Router
+    ii. Route guards for authentication and role based access
+    iii. Navigation between components and url management
+
+#Components, Services, Models and Routes
 1. **App Component**
     i. Base component holding router outlet
     ii. Managing the user’s authentication state
@@ -586,16 +888,20 @@ class Notifications {
     vi. Can be accessed by unauthorised users
 3. **Profile Component**
     i. Allows for deletion of user account by user
-    ii. Interacts with auth and user services
-    iii. Can not be accessed by unauthorised users
+    ii. Allows for uploading and updating the profile image
+    iii. Displays current profile image
+    iv. Interacts with auth, user and imgupload services
+    v. Can not be accessed by unauthorised users
 4. **Dashboard Component**
     i. Loads and displays the groups a user is in
     ii. Allows the user to select a group the user is in
     iii. Displays the channels of the group selected
-    iv. Loads and displays the messages of the selected channel
-    v. Allows users to send messages to the selected channel
-    vi. Interacts with auth, group and chat services
-    vi. Can be accessed by all roles once authorised
+    iv. Loads and displays the messages of the selected channel which is limited to the most recent 5 messages
+    v. Allows users to send messages to the selected channel using socket.io for real-time messaging
+    vi. Allows users to send images in the selected channel
+    vii. Displays profile images next to usernames in messages
+    viii. Interacts with auth, group, chat and imgupload services
+    ix. Can be accessed by all roles once authorised
 5. **User Management Component**
     i. Displays a list of all users and notifications
     ii. Allows for approval of user account login after user registration
@@ -620,51 +926,92 @@ class Notifications {
     xiii. Allows a group admin or super admin to create a new group
     xiv. Interacts with auth, group and user services
     xv. Can be accessed by all roles once authorised
-7. Auth service
+7. **Auth service**
     i. Login and logout users with the backend
     ii. Save and retrieve all user details using local storage
     iii. Check if the user is logged in
     iv. Returns observables for asynchronous data
     v. Tracks the user with behaviour subject 
-8. User Service
+8. **User Service**
     i. Retrieve all users and notifications
     ii. Register new users
     iii. Approve users for login
     iv. Update user roles and group roles
-    v. Delete users
-    vi. Ban users from groups
-    vii. Returns observables for asynchronous data
-9. Group Service
+    v. Update user profile images
+    vi. Delete users
+    vii. Ban users from groups
+    viii. Returns observables for asynchronous data
+9. **Group Service**
     i. Retrieves all groups
     ii. Promote user and demote group admin from a group
     iii. Creating new groups and channels
     iv. Deleting groups and channels
     v. Returns observables for asynchronous data
-10. Chat Service
+10. **Chat Service**
     i. Retrieves all messages for a specific channel within a group
-    ii. Sends new messages to the server
-    iii. Returns observables for asynchronous data
-11. User Model
+    ii. Initializes Socket.io connection
+    iii. Retrieves real-time messages from other users
+    iv. Sends new messages (text and image) to the server
+    v. Manages chat room joining
+    vi. Manages chat room leaving
+    vii. Disconnects socket connections
+    viii. Returns observables for asynchronous data
+11. **Imgupload Service**
+    i. Handles file upload functionality for profile and chat images
+    ii. Returns observables for asynchronous data
+11. **User Model**
     i. Represents a registered user
     ii. Stores login credentials, roles, groups, group join requests and login approval
     iii. Each user has a unique username and email
     iv. Password is not saved in the model for security reasons
     v. Roles include SuperAdmin, GroupAdmin, User
-12. Group Model
+    vi. Includes profileImg field for storing profile image filename
+12. **Group Model**
     i. Represents a group
     ii. Stores id, name, channels, banned users and admins
     iii. Each group has a unique id
     iv. Groups can have multiple channels
     v. Tracks who is an admins of the group which is the usernames of admins
     vi. Tracks which users are banned using their usernames
-13. Notification Model
+13. **Notification Model**
     i. Represents a system notification created by a user
     ii. Stores the Admin username who banned the user, the description and the reason for the ban
     iii. Used to record when a user was banned from a group
-14. Message Model
+14. **Message Model**
     i. Represents a single chat message within a group channel
-    ii. Stores the sender’s username, message, channel sent in and group sent in
+    ii. Stores the sender’s username, message, channel sent in, group sent in, message type, image url and profile image url
     iii. Each message is linked to a group id and channel name
+    iv. Message type includes either text or image to distinguish if the message is an image
+    v. Image url and profile image url contains the name to direct to where the image is saved
+15. **Login Route** 
+    i. Route path is `/login`
+    ii. Accessible to unauthenticated users
+    iii. Redirects to dashboard after successful login
+16. **Dashboard Route**
+    i. Route path is `/dashboard` 
+    ii. Protected route - requires authentication
+    iii. Default route after login
+17. **Profile Route**
+    i. Route path is `/profile`
+    ii. Protected route - requires authentication
+18. **User Management Route**
+    i. Route path is `/user-management`
+    ii. Protected route - requires SuperAdmin role
+19. **Group Management Route**
+    i. Route path is `/group-management`
+    ii. Protected route - requires authentication
+
+###Commiting to github
+1. **Commiting to development branch**
+    i. git checkout development
+    ii. git add .
+    iii. git commit -m "commit"
+    iv. git push origin development
+2. **Merging development branch with master**
+    i.git checkout master
+    ii. git pull origin master
+    iii. git merge development
+    iv. git push origin master
 
 ###Starting the application
 1. **Navigate to the server folder**
@@ -674,3 +1021,9 @@ class Notifications {
 3. **Open a new terminal**
 4. **Start the frontend**
     i. ng serve
+
+###Resetting the database
+1. **Navigate to the App folder inside server**
+    i. cd server/App
+2. **run reset file**
+    ii. node reset.js 

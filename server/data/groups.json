@@ -1,2 +1,18 @@
 [
+  {
+    "id": 1,
+    "name": "group 1",
+    "admins": [],
+    "channels": [
+      "test"
+    ],
+    "banned": []
+  },
+  {
+    "id": 2,
+    "name": "group 2",
+    "admins": [],
+    "channels": [],
+    "banned": []
+  }
 ]

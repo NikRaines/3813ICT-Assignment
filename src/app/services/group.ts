@@ -15,11 +15,12 @@ export class GroupService {
     return this.http.get<GroupModel[]>(`${this.apiUrl}/api/groups`);
   }
 
-  //Admin within groups
+  //Admin promotion within groups
   promoteAdmin(groupId: number, username: string): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/api/groups/${groupId}/promoteAdmin`, { username });
   }
 
+  //Admin deletion within groups
   demoteAdmin(groupId: number, username: string): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/api/groups/${groupId}/demoteAdmin`, { username });
   }
@@ -29,6 +30,7 @@ export class GroupService {
     return this.http.post<any>(`${this.apiUrl}/api/groups`, { name, creator, role });
   }
 
+  //Channel creation
   createChannel(groupId: number, channel: string, username?: string, role?: string): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/api/groups/${groupId}/channels`, { channel, username, role });
   }
@@ -38,6 +40,7 @@ export class GroupService {
     return this.http.delete(`${this.apiUrl}/api/groups/${groupId}`);
   }
 
+  //Channel deletion
   deleteChannel(groupId: number, channel: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/api/groups/${groupId}/channels/${channel}`);
   }

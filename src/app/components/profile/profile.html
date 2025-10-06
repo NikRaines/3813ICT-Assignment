@@ -1,2 +1,20 @@
-<p>profile image upload will go here</p>
-<button *ngIf="user.username !== 'super'"(click)="deleteAccount()" class="btn btn-danger">Delete Account</button>
+<div>
+    <a>Current Profile Picture</a>
+    <div>
+    <img *ngIf="user && user.profileImg" 
+             [src]="'http://localhost:3000/images/' + user.profileImg" 
+             alt="Profile Picture" 
+             class="square me-2" 
+             style="width: 248px; height: 248px; object-fit: cover;">
+    </div>
+</div>
+<div class="mt-4">
+    <a>Upload New Profile Picture</a>
+    <form>
+        <div class="form-group mt-2">
+            <input type="file" class="form-control" (change)="onFileSelected($event)" name="uploadfile" id = "uploadfile" />
+        </div>
+        <button class="btn btn-primary mt-2" type="button" (click) ="onUpload()">Submit</button>
+    </form>
+    <button *ngIf="user.username !== 'super'"(click)="deleteAccount()" class="btn btn-danger">Delete Account</button>
+</div>
