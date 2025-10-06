@@ -19,6 +19,7 @@ export class Auth {
     return this.http.post<User>(`${this.apiUrl}/api/users/login`, { username, password });
   }
 
+  //Logout
   logout(): Observable<void> {
     localStorage.removeItem('currentUser');
     this.currentUser = null;
@@ -26,16 +27,19 @@ export class Auth {
     return this.http.post<void>(`${this.apiUrl}/api/users/logout`, {});
   }
 
+  //Check if user is logged in
   isLoggedIn(): boolean {
     return !!localStorage.getItem('currentUser');
   }
 
+  //Save user to local storage
   saveProfile(user: User) {
     this.currentUser = user;
     localStorage.setItem('currentUser', JSON.stringify(user));
     this.currentUser$.next(user);
   }
 
+  //Get current user from local storage
   getCurrentUser(): User | null {
     let storedUser = localStorage.getItem('currentUser');
     return storedUser ? JSON.parse(storedUser) : null;

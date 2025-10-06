@@ -43,7 +43,7 @@ class Group {
 }
 
 class Messages {
-    constructor(groupID, channel, sender, text, imageUrl = null, messageType = 'text') {
+    constructor(groupID, channel, sender, text, imageUrl = '', messageType = 'text') {
         this.groupID = groupID;
         this.channel = channel;
         this.sender = sender; //usernames
@@ -270,7 +270,6 @@ app.delete('/api/users/:username', async (req, res) => {
 });
 
 //Group management
-
 // Create a new group
 app.post('/api/groups', async (req, res) => {
     try {
@@ -538,7 +537,6 @@ app.post('/api/groups/:groupId/ban', async (req, res) => {
 });
 
 //Dashboard
-
 // Send a new message
 app.post('/api/messages', async (req, res) => {
     try {
@@ -557,6 +555,7 @@ app.post('/api/messages', async (req, res) => {
     }
 });
 
+// Image upload and profile image update
 app.post('/api/upload', (req, res) => {
     var form = new formidable.IncomingForm({ uploadDir: './userimages' });
     form.keepExtensions = true;
@@ -595,7 +594,7 @@ app.post('/api/upload', (req, res) => {
     form.parse(req);
 });
 
-//Update user profile image
+// Update user profile image
 app.post('/api/users/updateProfileImg', async (req, res) => {
     try {
         const { username, profileImg } = req.body;
@@ -617,7 +616,7 @@ app.post('/api/users/updateProfileImg', async (req, res) => {
     }
 });
 
-//Start Server and Socket.io
+// Start Server and Socket.io
 const server = http.createServer(app);
 sockets.connect(server, Messages);
 

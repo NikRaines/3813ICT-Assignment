@@ -3,7 +3,7 @@ export interface Message {
     sender: string;
     channel: string;
     text: string;
-    messageType?: string;
-    imageUrl?: string;
-    profileImg?: string;
+    messageType: string;
+    imageUrl: string;
+    profileImg: string;
 }

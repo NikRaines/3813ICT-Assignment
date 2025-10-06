@@ -50,21 +50,40 @@ function connect(server, Messages) {
     });
 
     // Sending messages
-    socket.on('sendMessage', async (data) => {      
+    socket.on('sendMessage', async (data) => {
         const { db, client } = await connectDB();
+        const roomId = `${data.groupId}-${data.channel}`;
         
+        // Get profile image data
         const user = await db.collection('users').findOne({ username: data.sender });
         const profileImg = user ? user.profileImg || 'default-avatar.png' : 'default-avatar.png';
+        
+        // Save new message
         const messageType = data.imageUrl ? 'image' : 'text';
-    
-        const newMsg = new Messages(data.groupId, data.channel, data.sender, data.text || '', data.imageUrl || null, messageType);
+        const newMsg = new Messages(data.groupId, data.channel, data.sender, data.text || '', data.imageUrl || '', messageType);
         newMsg.profileImg = profileImg;
+        await db.collection('messages').insertOne(newMsg);
         
-        const msgSave = new Messages(data.groupId, data.channel, data.sender, data.text || '', data.imageUrl || null, messageType);
-        await db.collection('messages').insertOne(msgSave);
+        // Check total messages in this channel
+        const totalMessages = await db.collection('messages').countDocuments({
+          channel: data.channel,
+          groupID: data.groupId
+        });
+        
+        // Remove messages if more than 5 exist
+        if (totalMessages > 5) {
+          const messagesToDelete = await db.collection('messages').find({
+            channel: data.channel,
+            groupID: data.groupId
+          }).sort({ _id: 1 }).limit(totalMessages - 5).toArray(); 
+          const idsToDelete = messagesToDelete.map(msg => msg._id);
+          await db.collection('messages').deleteMany({
+            _id: { $in: idsToDelete }
+          });
+        }
         await client.close();
-        
-        const roomId = `${data.groupId}-${data.channel}`;
+
+        // Emit to all users in the room
         io.to(roomId).emit('message', newMsg);
     });
 

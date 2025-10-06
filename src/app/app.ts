@@ -25,6 +25,7 @@ export class App {
     });
   }
 
+  //Logout
   logout() {
     this.auth.logout();
     this.user = null;

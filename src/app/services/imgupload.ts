@@ -9,6 +9,7 @@ export class ImguploadService {
 
   constructor(private http: HttpClient) { }
 
+  //Image upload
   imgupload(fd: FormData) {
     return this.http.post<any>(`${this.apiUrl}/api/upload`, fd);
   }
