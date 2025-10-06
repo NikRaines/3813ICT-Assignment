@@ -555,7 +555,7 @@ app.post('/api/messages', async (req, res) => {
     }
 });
 
-// Image upload and profile image update
+// Image upload
 app.post('/api/upload', (req, res) => {
     var form = new formidable.IncomingForm({ uploadDir: './userimages' });
     form.keepExtensions = true;
